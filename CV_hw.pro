@@ -24,8 +24,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    imageholder.cpp \
+    detailwindow.cpp \
+    iconhelper.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    imageholder.h \
+    detailwindow.h \
+    iconhelper.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    style.qrc
