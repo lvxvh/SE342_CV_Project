@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QObject>
+#include "qhsl.h"
 
 ImageHolder::ImageHolder()
 {
@@ -21,6 +22,7 @@ bool ImageHolder::loadImage(MainWindow *m)
     if(!filename.isEmpty()) {
         if(originImage.load(filename)) {
             displayImage = originImage;
+            tmpImage = originImage;
             QPixmap pix = QPixmap::fromImage(displayImage);
             Ui::MainWindow *ui = m->getUi();
             ui->image->setPixmap(pix);
@@ -59,9 +61,10 @@ void ImageHolder::fitScreen(MainWindow *m)
     qreal areaWidth = ui->scrollArea->width();
     qreal areaHeight = ui->scrollArea->height();
     qreal scale = (iWidth/areaWidth > iHeight/areaHeight) ? iWidth/areaWidth : iHeight/areaHeight;
-    displayWidth = iWidth/scale;
-    displayHeight = iHeight/scale;
-    displayImage = originImage.scaled(displayWidth, displayHeight, Qt::KeepAspectRatio);
+    displayWidth = floor(iWidth/scale);
+    displayHeight = floor(iHeight/scale);
+    displayImage = displayImage.scaled(displayWidth, displayHeight, Qt::KeepAspectRatio);
+    tmpImage = tmpImage.scaled(displayWidth, displayHeight, Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(displayImage);
     ui->image->setPixmap(pix);
 
@@ -70,46 +73,59 @@ void ImageHolder::fitScreen(MainWindow *m)
 }
 
 void ImageHolder::actualPix(MainWindow *m)
-{
-    displayImage = originImage;
+{   
+    displayWidth = originImage.width();
+    displayHeight = originImage.height();
+    displayImage = displayImage.scaled(displayWidth, displayHeight, Qt::KeepAspectRatio);
+    tmpImage = tmpImage.scaled(displayWidth, displayHeight, Qt::KeepAspectRatio);
     QPixmap pix = QPixmap::fromImage(displayImage);
-    displayWidth = displayImage.width();
-    displayHeight = displayImage.height();
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
     m->setUi(ui);
 
 }
 
-void ImageHolder::rgbChannel(MainWindow *m, QString color)
+void ImageHolder::rgbChannel(MainWindow *m, qint32 color)
 {
-    QImage outImage = displayImage;
-    if(color == "red"){
+    switch (color) {
+    case RGB_R:
         for(int y = 0;y < displayHeight; ++y){
             for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qRed(pixel), qRed(pixel), qRed(pixel)));
+                QRgb pixel = tmpImage.pixel(x,y);
+                displayImage.setPixel(x, y, qRgb(qRed(pixel), qRed(pixel), qRed(pixel)));
             }
         }
-    } else if(color == "green"){
+        break;
+    case RGB_G:
         for(int y = 0;y < displayHeight; ++y){
             for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qGreen(pixel), qGreen(pixel), qGreen(pixel)));
+                QRgb pixel = tmpImage.pixel(x,y);
+                displayImage.setPixel(x, y, qRgb(qGreen(pixel), qGreen(pixel), qGreen(pixel)));
             }
         }
-   } else if(color == "blue"){
+        break;
+    case RGB_B:
         for(int y = 0;y < displayHeight; ++y){
             for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qBlue(pixel), qBlue(pixel), qBlue(pixel)));
+                QRgb pixel = tmpImage.pixel(x,y);
+                displayImage.setPixel(x, y, qRgb(qBlue(pixel), qBlue(pixel), qBlue(pixel)));
             }
         }
-    } else {
-        outImage = displayImage;
+        break;
+    default:
+        bool r = color & 1;
+        bool g = (color >> 1) & 1;
+        bool b = (color >> 2) & 1;
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = tmpImage.pixel(x,y);
+                displayImage.setPixel(x, y, qRgb(qRed(pixel)*r, qGreen(pixel)*g, qBlue(pixel)*b));
+            }
+        }
+        break;
     }
 
-    QPixmap pix = QPixmap::fromImage(outImage);
+    QPixmap pix = QPixmap::fromImage(displayImage);
 
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
@@ -118,18 +134,34 @@ void ImageHolder::rgbChannel(MainWindow *m, QString color)
 
 void ImageHolder::toGray(MainWindow *m)
 {
-    QImage outImage = displayImage;
     for(int y = 0;y < displayHeight; ++y){
         for(int x = 0;x < displayWidth; ++x){
-            QRgb pixel = outImage.pixel(x,y);
+            QRgb pixel = tmpImage.pixel(x,y);
             qint32 r=qRed(pixel);
             qint32 g=qGreen(pixel);
             qint32 b=qBlue(pixel);
             qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
-            outImage.setPixel(x, y, qRgb(gray, gray, gray));
+            displayImage.setPixel(x, y, qRgb(gray, gray, gray));
         }
     }
-    QPixmap pix = QPixmap::fromImage(outImage);
+    QPixmap pix = QPixmap::fromImage(displayImage);
+
+    Ui::MainWindow *ui = m->getUi();
+    ui->image->setPixmap(pix);
+    m->setUi(ui);
+}
+
+void ImageHolder::changeHue(MainWindow *m, int offset)
+{
+    for(int y = 0; y < displayHeight; ++y){
+        for(int x = 0;x < displayWidth; ++x){
+            QRgb pixel = tmpImage.pixel(x, y);
+            QHsl hsl = QHsl(pixel);
+            hsl.setHue(hsl.getHue() + offset);
+            displayImage.setPixel(x, y, hsl.toRgb());
+        }
+    }
+    QPixmap pix = QPixmap::fromImage(displayImage);
 
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);

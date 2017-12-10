@@ -188,6 +188,20 @@
           </attribute>
           <layout class="QGridLayout" name="gridLayout_8">
            <item row="7" column="0">
+            <widget class="QPushButton" name="grayButton">
+             <property name="text">
+              <string>转为灰度图像</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QPushButton" name="hbsButton">
+             <property name="text">
+              <string>色相/饱和度/亮度调整</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="0">
             <spacer name="verticalSpacer_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -200,46 +214,66 @@
              </property>
             </spacer>
            </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="rgbButton">
-             <property name="text">
-              <string>RGB</string>
+           <item row="2" column="0" rowspan="2">
+            <widget class="QFrame" name="frame">
+             <property name="autoFillBackground">
+              <bool>true</bool>
              </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QPushButton" name="bButton">
-             <property name="text">
-              <string>蓝</string>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QPushButton" name="rButton">
-             <property name="text">
-              <string>红</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="gButton">
-             <property name="text">
-              <string>绿</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QPushButton" name="grayButton">
-             <property name="text">
-              <string>转为灰度图像</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="hbsButton">
-             <property name="text">
-              <string>色相/饱和度/亮度调整</string>
-             </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>三通道分离</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QCheckBox" name="rgbButton">
+                <property name="text">
+                 <string>RGB</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QCheckBox" name="rButton">
+                <property name="text">
+                 <string>红</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QCheckBox" name="bButton">
+                <property name="text">
+                 <string>蓝</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QCheckBox" name="gButton">
+                <property name="text">
+                 <string>绿</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>

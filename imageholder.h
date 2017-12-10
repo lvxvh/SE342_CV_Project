@@ -7,6 +7,10 @@
 #include<QImage>
 #include "mainwindow.h"
 
+#define RGB_R 1
+#define RGB_G 2
+#define RGB_B 4
+
 class MainWindow;
 
 namespace Ui {
@@ -23,8 +27,9 @@ public:
     bool saveAs(MainWindow *m);
     void fitScreen(MainWindow *m);
     void actualPix(MainWindow *m);
-    void rgbChannel(MainWindow *m, QString color);
+    void rgbChannel(MainWindow *m, qint32 color);
     void toGray(MainWindow *m);
+    void changeHue(MainWindow *m, int offset);
 
     QRgb getRgb(qint32 x, qint32 y);
 
@@ -33,8 +38,11 @@ public:
 
 private:
     QString filename;
+
     QImage originImage;
+    QImage tmpImage;
     QImage displayImage;
+
     qint32 displayWidth;
     qint32 displayHeight;
 

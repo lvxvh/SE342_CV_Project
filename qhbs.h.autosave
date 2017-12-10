@@ -1,0 +1,26 @@
+#ifndef QHBS_H
+#define QHBS_H
+#include <QRgb>
+
+class QHsl {
+public:
+    QHbs(QRgb rgb);
+    ~QHbs();
+    
+    int getHue();
+    int getBrightness();
+    int getSaturation();
+      
+    void setHue(int value);    
+    void setBrightness(int value);    
+    void setSaturation(int value);
+    
+    QRgb toRgb();
+private:
+    int hue;
+    float brightness;
+    float saturation;
+};
+
+#endif // QHBS_H
+ 

@@ -28,16 +28,18 @@ SOURCES += main.cpp\
     imageholder.cpp \
     detailwindow.cpp \
     iconhelper.cpp \
-    hbsdialog.cpp
+    hsldialog.cpp \
+    qhsl.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
     detailwindow.h \
     iconhelper.h \
-    hbsdialog.h
+    hsldialog.h \
+    qhsl.h
 
 FORMS    += mainwindow.ui \
-    hbsdialog.ui
+    hsldialog.ui
 
 RESOURCES += \
     style.qrc

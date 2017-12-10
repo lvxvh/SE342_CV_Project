@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void changeHue(int offset);
 
     Ui::MainWindow *getUi() const;
     void setUi(Ui::MainWindow *value);
@@ -28,17 +29,11 @@ private slots:
     void on_action_Save_triggered();
     void on_action_SaveAs_triggered();
     void on_detailButton_clicked();
-
     void on_rButton_clicked();
-
     void on_rgbButton_clicked();
-
     void on_gButton_clicked();
-
     void on_bButton_clicked();
-
     void on_grayButton_clicked();
-
     void on_hbsButton_clicked();
 
 private:

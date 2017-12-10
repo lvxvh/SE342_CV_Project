@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>hbsDialog</class>
- <widget class="QDialog" name="hbsDialog">
+ <class>hslDialog</class>
+ <widget class="QDialog" name="hslDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,24 +17,8 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>色相/饱和度/亮度调整</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>400</x>
-     <y>20</y>
-     <width>81</width>
-     <height>221</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Vertical</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
   <widget class="QSlider" name="hSlider">
    <property name="geometry">
     <rect>
@@ -43,6 +27,12 @@
      <width>291</width>
      <height>22</height>
     </rect>
+   </property>
+   <property name="minimum">
+    <number>-180</number>
+   </property>
+   <property name="maximum">
+    <number>180</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -69,6 +59,17 @@
      <width>41</width>
      <height>21</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="inputMask">
+    <string>#000</string>
+   </property>
+   <property name="text">
+    <string>0</string>
    </property>
   </widget>
   <widget class="QLabel" name="slabel">
@@ -106,6 +107,17 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="inputMask">
+    <string>#000</string>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
   </widget>
   <widget class="QLabel" name="blabel">
    <property name="geometry">
@@ -142,41 +154,67 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="inputMask">
+    <string>#000</string>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
+   <property name="frame">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>30</y>
+     <width>95</width>
+     <height>251</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="cancelButton">
+      <property name="text">
+       <string>确定</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="confirmButton">
+      <property name="text">
+       <string>取消</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>hbsDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>hbsDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
