@@ -5,6 +5,9 @@
 
 #include <QString>
 #include<QImage>
+#include "mainwindow.h"
+
+class MainWindow;
 
 namespace Ui {
 class MainWindow;
@@ -15,13 +18,13 @@ public:
     ImageHolder();
     ~ImageHolder();
 
-    bool loadImage(QWidget *m, Ui::MainWindow *ui);
+    bool loadImage(MainWindow *m);
     bool save();
-    bool saveAs(QWidget *m);
-    void fitScreen(Ui::MainWindow *ui);
-    void actualPix(Ui::MainWindow *ui);
-    void rgbChannel(Ui::MainWindow *ui, QString color);
-    void toGray(Ui::MainWindow *ui);
+    bool saveAs(MainWindow *m);
+    void fitScreen(MainWindow *m);
+    void actualPix(MainWindow *m);
+    void rgbChannel(MainWindow *m, QString color);
+    void toGray(MainWindow *m);
 
     QRgb getRgb(qint32 x, qint32 y);
 
@@ -35,7 +38,6 @@ private:
     qint32 displayWidth;
     qint32 displayHeight;
 
-    qint32 size;
 };
 
 #endif // IMAGEHOLDER_H

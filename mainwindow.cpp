@@ -26,17 +26,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_action_Open_triggered()
 {
-    ih->loadImage(this, ui);
+    ih->loadImage(this);
 }
 
 void MainWindow::on_action_fit_screen_triggered()
 {
-    ih->fitScreen(ui);
+    ih->fitScreen(this);
 }
 
 void MainWindow::on_action_actual_pix_triggered()
 {
-    ih->actualPix(ui);
+    ih->actualPix(this);
 }
 
 void MainWindow::on_action_Save_triggered()
@@ -71,31 +71,41 @@ void MainWindow::on_detailButton_clicked()
 
 void MainWindow::on_rButton_clicked()
 {
-    ih->rgbChannel(ui, "red");
+    ih->rgbChannel(this, "red");
 }
 
 void MainWindow::on_rgbButton_clicked()
 {
-    ih->rgbChannel(ui, "all");
+    ih->rgbChannel(this, "all");
 }
 
 void MainWindow::on_gButton_clicked()
 {
-    ih->rgbChannel(ui, "green");
+    ih->rgbChannel(this, "green");
 }
 
 void MainWindow::on_bButton_clicked()
 {
-    ih->rgbChannel(ui, "blue");
+    ih->rgbChannel(this, "blue");
 }
 
 void MainWindow::on_grayButton_clicked()
 {
-    ih->toGray(ui);
+    ih->toGray(this);
 }
 
 void MainWindow::on_hbsButton_clicked()
 {
     hbsDialog *dlg = new hbsDialog(this);
     dlg->show();
+}
+
+Ui::MainWindow *MainWindow::getUi() const
+{
+    return ui;
+}
+
+void MainWindow::setUi(Ui::MainWindow *value)
+{
+    ui = value;
 }

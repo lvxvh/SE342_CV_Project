@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "imageholder.h"
 
+class ImageHolder;
+
 namespace Ui {
 class MainWindow;
 }
@@ -15,6 +17,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    Ui::MainWindow *getUi() const;
+    void setUi(Ui::MainWindow *value);
 
 private slots:
     void on_action_Open_triggered();
