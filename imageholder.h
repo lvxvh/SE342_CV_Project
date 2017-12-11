@@ -30,6 +30,9 @@ public:
     void rgbChannel(MainWindow *m, qint32 color);
     void toGray(MainWindow *m);
     void changeHue(MainWindow *m, int offset);
+    void changeSaturation(MainWindow *m, int para);
+    void cacheImage(QImage image);
+    void resetImage(MainWindow *m);
 
     QRgb getRgb(qint32 x, qint32 y);
 
@@ -39,8 +42,11 @@ public:
 private:
     QString filename;
 
-    QImage originImage;
-    QImage tmpImage;
+    QVector<QImage> images;
+    bool reseted;
+    int imgPtr;
+    /*QImage originImage;
+    QImage tmpImage;*/
     QImage displayImage;
 
     qint32 displayWidth;

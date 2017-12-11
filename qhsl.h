@@ -15,14 +15,15 @@ public:
     void setLightness(float value);
     void setSaturation(float value);
 
+
+
     QRgb toRgb();
 
 
-
 private:
-    float hue;
-    float saturation;
-    float lightness;
+    float hue;   //[0,360) 0 means max==min
+    float saturation; //[0,1]
+    float lightness; //[0,1]
 };
 
 #endif // QHBS_H

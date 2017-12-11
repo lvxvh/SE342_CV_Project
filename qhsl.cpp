@@ -120,6 +120,7 @@ QRgb QHsl::toRgb()
     return qRgb(r,g,b);
 }
 
+
 float QHsl::getLightness() const
 {
     return lightness;

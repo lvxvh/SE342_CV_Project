@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ih(new ImageHolder)
 {
     ui->setupUi(this);
-    IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf05a), 20);
+    IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
 }
 
 MainWindow::~MainWindow()
@@ -27,6 +27,11 @@ MainWindow::~MainWindow()
 void MainWindow::changeHue(int offset)
 {
     ih->changeHue(this, offset);
+}
+
+void MainWindow::changeSaturation(int para)
+{
+    ih->changeSaturation(this, para);
 }
 
 
@@ -70,8 +75,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 
 void MainWindow::on_detailButton_clicked()
 {
-    QDialog *dlg = new QDialog(this);
-    dlg->show();
+    ih->resetImage(this);
 }
 
 void MainWindow::on_rButton_clicked()

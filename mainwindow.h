@@ -18,6 +18,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void changeHue(int offset);
+    void changeSaturation(int para);
 
     Ui::MainWindow *getUi() const;
     void setUi(Ui::MainWindow *value);

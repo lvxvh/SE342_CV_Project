@@ -23,6 +23,12 @@ private slots:
 
     void on_hSlider_valueChanged(int value);
 
+    void on_sEdit_textEdited(const QString &arg1);
+
+    void on_sSlider_valueChanged(int value);
+
+    void on_sEdit_editingFinished();
+
 private:
     Ui::hslDialog *ui;
 };
