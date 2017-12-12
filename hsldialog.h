@@ -29,6 +29,16 @@ private slots:
 
     void on_sEdit_editingFinished();
 
+    void on_lEdit_textEdited(const QString &arg1);
+
+    void on_lEdit_editingFinished();
+
+    void on_lSlider_valueChanged(int value);
+
+    void on_confirmButton_clicked();
+
+    void on_cancelButton_clicked();
+
 private:
     Ui::hslDialog *ui;
 };

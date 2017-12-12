@@ -29,9 +29,9 @@ public:
     void actualPix(MainWindow *m);
     void rgbChannel(MainWindow *m, qint32 color);
     void toGray(MainWindow *m);
-    void changeHue(MainWindow *m, int offset);
-    void changeSaturation(MainWindow *m, int para);
-    void cacheImage(QImage image);
+    void changeHsl(MainWindow *m, int hOffset, int sOffset, int lOffset);
+    void cacheImage(QString msg);
+    void originImage(MainWindow *m);
     void resetImage(MainWindow *m);
 
     QRgb getRgb(qint32 x, qint32 y);
@@ -39,14 +39,20 @@ public:
     qint32 getDisplayHeight() const;
     qint32 getDisplayWidth() const;
 
+
+    QVector<QString> getLogs() const;
+    void log(QString msg);
+
+    int getImgPtr() const;
+
 private:
     QString filename;
 
     QVector<QImage> images;
+    QVector<QString> logs;
     bool reseted;
     int imgPtr;
-    /*QImage originImage;
-    QImage tmpImage;*/
+
     QImage displayImage;
 
     qint32 displayWidth;

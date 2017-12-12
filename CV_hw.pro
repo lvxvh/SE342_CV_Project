@@ -29,17 +29,22 @@ SOURCES += main.cpp\
     detailwindow.cpp \
     iconhelper.cpp \
     hsldialog.cpp \
-    qhsl.cpp
+    qhsl.cpp \
+    mslider.cpp \
+    historydialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
     detailwindow.h \
     iconhelper.h \
     hsldialog.h \
-    qhsl.h
+    qhsl.h \
+    mslider.h \
+    historydialog.h
 
 FORMS    += mainwindow.ui \
-    hsldialog.ui
+    hsldialog.ui \
+    historydialog.ui
 
 RESOURCES += \
     style.qrc

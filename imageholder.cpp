@@ -25,12 +25,12 @@ bool ImageHolder::loadImage(MainWindow *m)
     if(!filename.isEmpty()) {
         QImage originImage;
         if(originImage.load(filename)) {
-            cacheImage(originImage);
             displayImage = originImage;
+            cacheImage(QObject::tr("打开"));
             QPixmap pix = QPixmap::fromImage(displayImage);
             Ui::MainWindow *ui = m->getUi();
             ui->image->setPixmap(pix);
-            m->setUi(ui);
+
             displayWidth = displayImage.width();
             displayHeight = displayImage.height();
             return true;
@@ -68,12 +68,12 @@ void ImageHolder::fitScreen(MainWindow *m)
     displayWidth = iWidth/scale;
     displayHeight = iHeight/scale;
     displayImage = displayImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
-    cacheImage(displayImage);
+    cacheImage(QObject::tr("适应屏幕"));
     //tmpImage = tmpImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
     QPixmap pix = QPixmap::fromImage(displayImage);
     ui->image->setPixmap(pix);
 
-    m->setUi(ui);
+
 
 }
 
@@ -82,12 +82,12 @@ void ImageHolder::actualPix(MainWindow *m)
     displayWidth = images[0].width();
     displayHeight = images[0].height();
     displayImage = displayImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
-    cacheImage(displayImage);
+    cacheImage(QObject::tr("实际尺寸"));
     //tmpImage = tmpImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
     QPixmap pix = QPixmap::fromImage(displayImage);
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
-    m->setUi(ui);
+
 
 }
 
@@ -136,114 +136,103 @@ void ImageHolder::rgbChannel(MainWindow *m, qint32 color)
 
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
-    m->setUi(ui);
+
 }
 
 void ImageHolder::toGray(MainWindow *m)
 {
-    for(int y = 0;y < displayHeight; ++y){
-        for(int x = 0;x < displayWidth; ++x){
-            QRgb pixel = displayImage.pixel(x,y);
-            qint32 r=qRed(pixel);
-            qint32 g=qGreen(pixel);
-            qint32 b=qBlue(pixel);
-            qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
-            displayImage.setPixel(x, y, qRgb(gray, gray, gray));
+    if(!displayImage.allGray()){
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = displayImage.pixel(x,y);
+                qint32 r=qRed(pixel);
+                qint32 g=qGreen(pixel);
+                qint32 b=qBlue(pixel);
+                qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
+                displayImage.setPixel(x, y, qRgb(gray, gray, gray));
+            }
         }
-    }
-    cacheImage(displayImage);
-    QPixmap pix = QPixmap::fromImage(displayImage);
+        cacheImage(QObject::tr("转为灰度图像"));
+        QPixmap pix = QPixmap::fromImage(displayImage);
 
-    Ui::MainWindow *ui = m->getUi();
-    ui->image->setPixmap(pix);
-    m->setUi(ui);
+        Ui::MainWindow *ui = m->getUi();
+        ui->image->setPixmap(pix);
+    }
 }
 
-void ImageHolder::changeHue(MainWindow *m, int offset)
+void ImageHolder::changeHsl(MainWindow *m, int hOffset, int sOffset, int lOffset)
 {
+    displayImage = images[imgPtr];
+    float h, s, l;
     for(int y = 0; y < displayHeight; ++y){
         for(int x = 0;x < displayWidth; ++x){
             QRgb pixel = displayImage.pixel(x, y);
             QHsl hsl = QHsl(pixel);
-            hsl.setHue(hsl.getHue() + offset);
+            h = hsl.getHue();
+            s = hsl.getSaturation();
+            l = hsl.getLightness();
+
+            if(hOffset != 0){
+                hsl.setHue(h + hOffset);
+            }
+
+            if(sOffset != 0){
+                float percent = sOffset/100.0f;
+                if(percent >= 0) {
+                    hsl.setSaturation(s + ((1-s)/100)*sOffset);
+                } else {
+                    hsl.setSaturation(s + (s/100)*sOffset);
+                }
+            }
+
+            if(lOffset != 0){
+                float percent = lOffset/100.0f;
+                if(percent >= 0) {
+                    hsl.setLightness(l + ((1-l)/100)*lOffset);
+                } else {
+                    hsl.setLightness(l + (l/100)*lOffset);
+                }
+            }
+
             displayImage.setPixel(x, y, hsl.toRgb());
         }
     }
     QPixmap pix = QPixmap::fromImage(displayImage);
-
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
-    m->setUi(ui);
 }
 
-void ImageHolder::changeSaturation(MainWindow *m, int para)
-{
-    float percent = para/100.0f;
-    float alpha, s, l;
-    int r,g,b;
-    for(int y = 0; y < displayHeight; ++y){
-        for(int x = 0;x <displayWidth; ++x){
-            QRgb pixel = displayImage.pixel(x, y);
-            r = qRed(pixel);
-            g = qGreen(pixel);
-            b = qBlue(pixel);
-            QHsl hsl = QHsl(pixel);
-            s = hsl.getSaturation();
-            l = hsl.getLightness();
-            if(percent >= 0){
-                if(percent + s >= 1){
-                    alpha = s;
-                } else {
-                    alpha = 1 - percent;
-                }
-                alpha = 1/alpha - 1;               
-                r = r + floor((r - floor(l * 255))*alpha);
-                if (r < 0) r = 0;
-                if (r > 255) r = 255;
-                g = g + floor((g - floor(l * 255))*alpha);
-                if (g < 0) g = 0;
-                if (g > 255) g = 255;
-                b = b + floor((b - floor(l * 255))*alpha);
-                if (b < 0) b = 0;
-                if (b > 255) b = 255;
-            } else {
-                alpha = percent;
-                r = floor(l*255) + floor((r - floor(l * 255))*(1 + alpha));
-                g = floor(l*255) + floor((g - floor(l * 255))*(1 + alpha));
-                b = floor(l*255) + floor((b - floor(l * 255))*(1 + alpha));
-            }
-            displayImage.setPixel(x, y, qRgb(r,g,b));
-        }
-    }
-    QPixmap pix = QPixmap::fromImage(displayImage);
-
-    Ui::MainWindow *ui = m->getUi();
-    ui->image->setPixmap(pix);
-    m->setUi(ui);
-}
-
-void ImageHolder::cacheImage(QImage image)
+void ImageHolder::cacheImage(QString msg)
 {
     if(reseted) {
         images.erase(images.begin() + (imgPtr + 1));
+        logs.erase(logs.begin() + (imgPtr + 1));
         reseted = 0;
     }
-    images.push_back(image);
+    images.push_back(displayImage);
+    logs.push_back(msg);
     imgPtr++;
 }
 
-void ImageHolder::resetImage(MainWindow *m)
+void ImageHolder::originImage(MainWindow *m)
 {
     if(imgPtr > 0){
         displayImage = images[0];
         reseted = 1;
         imgPtr = 0;
         QPixmap pix = QPixmap::fromImage(displayImage);
-
         Ui::MainWindow *ui = m->getUi();
         ui->image->setPixmap(pix);
-        m->setUi(ui);
+
     }
+}
+
+void ImageHolder::resetImage(MainWindow *m)
+{
+    displayImage = images[imgPtr];
+    QPixmap pix = QPixmap::fromImage(displayImage);
+    Ui::MainWindow *ui = m->getUi();
+    ui->image->setPixmap(pix);
 }
 
 QRgb ImageHolder::getRgb(qint32 x, qint32 y)
@@ -260,3 +249,19 @@ qint32 ImageHolder::getDisplayWidth() const
 {
     return displayWidth;
 }
+
+void ImageHolder::log(QString msg)
+{
+    logs.push_back(msg);
+}
+
+int ImageHolder::getImgPtr() const
+{
+    return imgPtr;
+}
+
+QVector<QString> ImageHolder::getLogs() const
+{
+    return logs;
+}
+

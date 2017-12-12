@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "iconhelper.h"
 #include "hsldialog.h"
+#include "historydialog.h"
 #include <QImage>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
+    IconHelper::Instance()->SetIcon(ui->historyButton, QChar(0xf1da), 20);
 }
 
 MainWindow::~MainWindow()
@@ -24,15 +26,6 @@ MainWindow::~MainWindow()
     delete ih;
 }
 
-void MainWindow::changeHue(int offset)
-{
-    ih->changeHue(this, offset);
-}
-
-void MainWindow::changeSaturation(int para)
-{
-    ih->changeSaturation(this, para);
-}
 
 
 void MainWindow::on_action_Open_triggered()
@@ -75,7 +68,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 
 void MainWindow::on_detailButton_clicked()
 {
-    ih->resetImage(this);
+    ih->originImage(this);
 }
 
 void MainWindow::on_rButton_clicked()
@@ -178,12 +171,19 @@ void MainWindow::on_hbsButton_clicked()
     dlg->show();
 }
 
+ImageHolder *MainWindow::getIh() const
+{
+    return ih;
+}
+
 Ui::MainWindow *MainWindow::getUi() const
 {
     return ui;
 }
 
-void MainWindow::setUi(Ui::MainWindow *value)
+
+void MainWindow::on_historyButton_clicked()
 {
-    ui = value;
+    historyDialog *dlg = new historyDialog(this);
+    dlg->show();
 }

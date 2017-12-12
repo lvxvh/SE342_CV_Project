@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "imageholder.h"
+#include <QDebug>
 
 class ImageHolder;
 
@@ -17,11 +18,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void changeHue(int offset);
-    void changeSaturation(int para);
 
     Ui::MainWindow *getUi() const;
-    void setUi(Ui::MainWindow *value);
+
+    ImageHolder *getIh() const;
 
 private slots:
     void on_action_Open_triggered();
@@ -36,6 +36,8 @@ private slots:
     void on_bButton_clicked();
     void on_grayButton_clicked();
     void on_hbsButton_clicked();
+
+    void on_historyButton_clicked();
 
 private:
     Ui::MainWindow *ui;
