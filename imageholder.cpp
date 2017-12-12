@@ -203,6 +203,64 @@ void ImageHolder::changeHsl(int hOffset, int sOffset, int lOffset)
     ui->image->setPixmap(pix);
 }
 
+void ImageHolder::Otsu()
+{
+    if(displayImage.allGray()){
+        int threshold = getOtsuThreshold();
+        for(int y = 0;y < displayHeight;++y){
+            for(int x = 0;x < displayWidth;++x){
+                if(qRed(displayImage.pixel(x, y)) > threshold) {
+                    displayImage.setPixel(x,y,qRgb(255,255,255));
+                } else {
+                    displayImage.setPixel(x,y,qRgb(0, 0, 0));
+                }
+            }
+        }
+
+        cacheImage(QObject::tr("Otsu"));
+        QPixmap pix = QPixmap::fromImage(displayImage);
+        Ui::MainWindow *ui = m->getUi();
+        ui->image->setPixmap(pix);
+    } else {
+        QMessageBox::information(m, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
+    }
+}
+
+int ImageHolder::getOtsuThreshold()
+{
+
+    float histogram[256] = {0};
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            histogram[qRed(displayImage.pixel(x, y))]++;
+        }
+    }
+
+    //normalize histogram & average gray
+    int size = displayHeight*displayWidth;
+    float u = 0;  //average gray
+    for(int i = 0;i < 256;++i){
+        histogram[i] = histogram[i]/size;
+        u += i*histogram[i];
+    }
+
+    int threshold;
+    float maxVariance = 0;
+    float w0 = 0, totalGray = 0;
+    for(int i = 0;i < 256;++i){
+        w0 += histogram[i];
+        totalGray += i*histogram[i];   //u0 = totalGray/w0
+
+        float t = totalGray/w0 - u; // t = u0 - u
+        float variance = t*t*w0/(1 - w0);
+        if(variance > maxVariance){
+            maxVariance = variance;
+            threshold = i;
+        }
+    }
+    return threshold;
+}
+
 void ImageHolder::cacheImage(QString msg)
 {
     if(reseted) {

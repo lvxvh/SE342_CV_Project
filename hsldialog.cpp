@@ -4,20 +4,20 @@
 
 #include <QMessageBox>
 
-hslDialog::hslDialog(QWidget *parent) :
+HslDialog::HslDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::hslDialog)
+    ui(new Ui::HslDialog)
 {
     setFixedSize(512,320);
     ui->setupUi(this);
 }
 
-hslDialog::~hslDialog()
+HslDialog::~HslDialog()
 {
     delete ui;
 }
 
-void hslDialog::on_hEdit_textEdited(const QString &arg1)
+void HslDialog::on_hEdit_textEdited(const QString &arg1)
 {
     bool ok;
     qint32 value = arg1.toInt(&ok, 10);
@@ -27,7 +27,7 @@ void hslDialog::on_hEdit_textEdited(const QString &arg1)
     }
 }
 
-void hslDialog::on_hSlider_valueChanged(int value)
+void HslDialog::on_hSlider_valueChanged(int value)
 {
     if(ui->hSlider->hasFocus()){
         ui->hEdit->setText(QString::number(value, 10));
@@ -38,7 +38,7 @@ void hslDialog::on_hSlider_valueChanged(int value)
 
 }
 
-void hslDialog::on_hEdit_editingFinished()
+void HslDialog::on_hEdit_editingFinished()
 {
     if(ui->hEdit->hasFocus()){
         bool ok;
@@ -59,7 +59,7 @@ void hslDialog::on_hEdit_editingFinished()
 
 
 
-void hslDialog::on_sEdit_textEdited(const QString &arg1)
+void HslDialog::on_sEdit_textEdited(const QString &arg1)
 {
     bool ok;
     qint32 value = arg1.toInt(&ok, 10);
@@ -69,7 +69,7 @@ void hslDialog::on_sEdit_textEdited(const QString &arg1)
     }
 }
 
-void hslDialog::on_sSlider_valueChanged(int value)
+void HslDialog::on_sSlider_valueChanged(int value)
 {
     if(ui->sSlider->hasFocus()){
         ui->sEdit->setText(QString::number(value, 10));
@@ -79,7 +79,7 @@ void hslDialog::on_sSlider_valueChanged(int value)
     ptr->getIh()->changeHsl(ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
 }
 
-void hslDialog::on_sEdit_editingFinished()
+void HslDialog::on_sEdit_editingFinished()
 {
     if(ui->sEdit->hasFocus()){
         bool ok;
@@ -99,7 +99,7 @@ void hslDialog::on_sEdit_editingFinished()
 }
 
 
-void hslDialog::on_lEdit_textEdited(const QString &arg1)
+void HslDialog::on_lEdit_textEdited(const QString &arg1)
 {
     bool ok;
     qint32 value = arg1.toInt(&ok, 10);
@@ -109,7 +109,7 @@ void hslDialog::on_lEdit_textEdited(const QString &arg1)
     }
 }
 
-void hslDialog::on_lEdit_editingFinished()
+void HslDialog::on_lEdit_editingFinished()
 {
     if(ui->lEdit->hasFocus()){
         bool ok;
@@ -128,7 +128,7 @@ void hslDialog::on_lEdit_editingFinished()
     }
 }
 
-void hslDialog::on_lSlider_valueChanged(int value)
+void HslDialog::on_lSlider_valueChanged(int value)
 {
     if(ui->lSlider->hasFocus()){
         ui->lEdit->setText(QString::number(value, 10));
@@ -138,14 +138,14 @@ void hslDialog::on_lSlider_valueChanged(int value)
     ptr->getIh()->changeHsl(ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
 }
 
-void hslDialog::on_confirmButton_clicked()
+void HslDialog::on_confirmButton_clicked()
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->cacheImage(QObject::tr("色相/饱和度/亮度调整"));
     this->close();
 }
 
-void hslDialog::on_cancelButton_clicked()
+void HslDialog::on_cancelButton_clicked()
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();

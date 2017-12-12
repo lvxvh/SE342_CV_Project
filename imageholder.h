@@ -30,6 +30,10 @@ public:
     void rgbChannel( qint32 color);
     void toGray();
     void changeHsl( int hOffset, int sOffset, int lOffset);
+
+    void Otsu();
+    int getOtsuThreshold();
+
     void cacheImage(QString msg);
     void originImage();
     void resetImage();

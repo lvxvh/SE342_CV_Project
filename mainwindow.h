@@ -46,6 +46,10 @@ private slots:
 
     void on_historyButton_clicked();
 
+    void on_otsuButton_clicked();
+
+    void on_thresholdButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     ImageHolder *ih;

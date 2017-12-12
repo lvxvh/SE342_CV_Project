@@ -5,9 +5,9 @@
 #include <QBoxLayout>
 
 
-historyDialog::historyDialog(QWidget *parent) :
+HistoryDialog::HistoryDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::historyDialog)
+    ui(new Ui::HistoryDialog)
 {
     setFixedSize(200,250);
     ui->setupUi(this);
@@ -16,12 +16,12 @@ historyDialog::historyDialog(QWidget *parent) :
     connect(parent, SIGNAL(refreshLog()), this, SLOT(receiveRefreshSig()));
 }
 
-historyDialog::~historyDialog()
+HistoryDialog::~HistoryDialog()
 {
     delete ui;
 }
 
-void historyDialog::freshLogs()
+void HistoryDialog::freshLogs()
 {
     QVBoxLayout *vLayout;
     if(ui->histories->layout() != NULL) { //clean
@@ -56,12 +56,12 @@ void historyDialog::freshLogs()
     ui->histories->setLayout(vLayout);
 }
 
-void historyDialog::receiveRefreshSig()
+void HistoryDialog::receiveRefreshSig()
 {
     freshLogs();
 }
 
-void historyDialog::chooseVersion()
+void HistoryDialog::chooseVersion()
 {
     QPushButton *btn = (QPushButton*)sender();
     bool ok;

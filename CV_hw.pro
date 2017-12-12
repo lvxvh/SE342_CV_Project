@@ -26,25 +26,26 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         mainwindow.cpp \
     imageholder.cpp \
-    detailwindow.cpp \
     iconhelper.cpp \
     hsldialog.cpp \
     qhsl.cpp \
     mslider.cpp \
-    historydialog.cpp
+    historydialog.cpp \
+    binarydialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
-    detailwindow.h \
     iconhelper.h \
     hsldialog.h \
     qhsl.h \
     mslider.h \
-    historydialog.h
+    historydialog.h \
+    binarydialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
-    historydialog.ui
+    historydialog.ui \
+    binarydialog.ui
 
 RESOURCES += \
     style.qrc

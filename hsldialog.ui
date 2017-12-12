@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>hslDialog</class>
- <widget class="QDialog" name="hslDialog">
+ <class>HslDialog</class>
+ <widget class="QDialog" name="HslDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

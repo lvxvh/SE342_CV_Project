@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>historyDialog</class>
- <widget class="QDialog" name="historyDialog">
+ <class>HistoryDialog</class>
+ <widget class="QDialog" name="HistoryDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

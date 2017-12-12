@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "iconhelper.h"
 #include "hsldialog.h"
+#include "BinaryDialog.h"
 #include "historydialog.h"
 #include <QImage>
 #include <QFileDialog>
@@ -167,7 +168,7 @@ void MainWindow::on_grayButton_clicked()
 
 void MainWindow::on_hbsButton_clicked()
 {
-    hslDialog *dlg = new hslDialog(this);
+    HslDialog *dlg = new HslDialog(this);
     dlg->show();
 }
 
@@ -194,6 +195,17 @@ Ui::MainWindow *MainWindow::getUi() const
 
 void MainWindow::on_historyButton_clicked()
 {
-    historyDialog *dlg = new historyDialog(this);
+    HistoryDialog *dlg = new HistoryDialog(this);
+    dlg->show();
+}
+
+void MainWindow::on_otsuButton_clicked()
+{
+    ih->Otsu();
+}
+
+void MainWindow::on_thresholdButton_clicked()
+{
+    BinaryDialog *dlg = new BinaryDialog(this);
     dlg->show();
 }

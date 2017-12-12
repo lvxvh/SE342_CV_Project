@@ -4,16 +4,16 @@
 #include <QDialog>
 
 namespace Ui {
-class hslDialog;
+class HslDialog;
 }
 
-class hslDialog : public QDialog
+class HslDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit hslDialog(QWidget *parent = 0);
-    ~hslDialog();
+    explicit HslDialog(QWidget *parent = 0);
+    ~HslDialog();
 
 private slots:
 
@@ -40,7 +40,7 @@ private slots:
     void on_cancelButton_clicked();
 
 private:
-    Ui::hslDialog *ui;
+    Ui::HslDialog *ui;
 };
 
 #endif // HBSDIALOG_H

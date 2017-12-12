@@ -4,16 +4,16 @@
 #include <QDialog>
 
 namespace Ui {
-class historyDialog;
+class HistoryDialog;
 }
 
-class historyDialog : public QDialog
+class HistoryDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit historyDialog(QWidget *parent = 0);
-    ~historyDialog();
+    explicit HistoryDialog(QWidget *parent = 0);
+    ~HistoryDialog();
 
     void freshLogs();
 signals:
@@ -22,7 +22,7 @@ private slots:
     void receiveRefreshSig();
     void chooseVersion();  //bind click
 private:
-    Ui::historyDialog *ui;
+    Ui::HistoryDialog *ui;
 };
 
 #endif // HISTORYDIALOG_H
