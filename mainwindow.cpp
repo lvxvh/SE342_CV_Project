@@ -13,7 +13,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    ih(new ImageHolder)
+    ih(new ImageHolder(this))
 {
     ui->setupUi(this);
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
@@ -30,17 +30,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_action_Open_triggered()
 {
-    ih->loadImage(this);
+    ih->loadImage();
 }
 
 void MainWindow::on_action_fit_screen_triggered()
 {
-    ih->fitScreen(this);
+    ih->fitScreen();
 }
 
 void MainWindow::on_action_actual_pix_triggered()
 {
-    ih->actualPix(this);
+    ih->actualPix();
 }
 
 void MainWindow::on_action_Save_triggered()
@@ -51,7 +51,7 @@ void MainWindow::on_action_Save_triggered()
 
 void MainWindow::on_action_SaveAs_triggered()
 {
-    ih->saveAs(this);
+    ih->saveAs();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *e)
@@ -68,7 +68,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 
 void MainWindow::on_detailButton_clicked()
 {
-    ih->originImage(this);
+    ih->originImage();
 }
 
 void MainWindow::on_rButton_clicked()
@@ -77,7 +77,7 @@ void MainWindow::on_rButton_clicked()
     if(ui->rgbButton->checkState() == Qt::Checked) {
         ui->rgbButton->setCheckState(Qt::Unchecked);
         color = RGB_G + RGB_B;
-        ih->rgbChannel(this, color);
+        ih->rgbChannel(color);
     } else {
         if(ui->rButton->checkState() == Qt::Checked){
             color += RGB_R;
@@ -91,7 +91,7 @@ void MainWindow::on_rButton_clicked()
         if(color == RGB_R + RGB_G + RGB_B){
             ui->rgbButton->setCheckState(Qt::Checked);
         }
-        if(color != 0) ih->rgbChannel(this, color);
+        if(color != 0) ih->rgbChannel(color);
         else ui->rButton->setCheckState(Qt::Checked);
     }
 }
@@ -103,7 +103,7 @@ void MainWindow::on_rgbButton_clicked()
         ui->rButton->setCheckState(Qt::Checked);
         ui->gButton->setCheckState(Qt::Checked);
         ui->bButton->setCheckState(Qt::Checked);
-        ih->rgbChannel(this, color);
+        ih->rgbChannel(color);
 
     } else {
         ui->rgbButton->setCheckState(Qt::Checked);
@@ -116,7 +116,7 @@ void MainWindow::on_gButton_clicked()
     if(ui->rgbButton->checkState() == Qt::Checked) {
         ui->rgbButton->setCheckState(Qt::Unchecked);
         color = RGB_R + RGB_B;
-        ih->rgbChannel(this, color);
+        ih->rgbChannel(color);
     } else {
         if(ui->rButton->checkState() == Qt::Checked){
             color += RGB_R;
@@ -130,7 +130,7 @@ void MainWindow::on_gButton_clicked()
         if(color == RGB_R + RGB_G + RGB_B){
             ui->rgbButton->setCheckState(Qt::Checked);
         }
-        if(color != 0) ih->rgbChannel(this, color);
+        if(color != 0) ih->rgbChannel(color);
         else ui->gButton->setCheckState(Qt::Checked);
     }
 }
@@ -141,7 +141,7 @@ void MainWindow::on_bButton_clicked()
     if(ui->rgbButton->checkState() == Qt::Checked) {
         ui->rgbButton->setCheckState(Qt::Unchecked);
         color = RGB_R + RGB_G;
-        ih->rgbChannel(this, color);
+        ih->rgbChannel(color);
     } else {
         if(ui->rButton->checkState() == Qt::Checked){
             color += RGB_R;
@@ -155,14 +155,14 @@ void MainWindow::on_bButton_clicked()
         if(color == RGB_R + RGB_G + RGB_B){
             ui->rgbButton->setCheckState(Qt::Checked);
         }
-        if(color != 0) ih->rgbChannel(this, color);
+        if(color != 0) ih->rgbChannel(color);
         else ui->bButton->setCheckState(Qt::Checked);
     }
 }
 
 void MainWindow::on_grayButton_clicked()
 {
-    ih->toGray(this);
+    ih->toGray();
 }
 
 void MainWindow::on_hbsButton_clicked()
@@ -174,6 +174,16 @@ void MainWindow::on_hbsButton_clicked()
 ImageHolder *MainWindow::getIh() const
 {
     return ih;
+}
+
+void MainWindow::emitLogsignal()
+{
+    emit refreshLog();
+}
+
+void MainWindow::changeVersion(int ptr)
+{
+    ih->changeVersion(ptr);
 }
 
 Ui::MainWindow *MainWindow::getUi() const

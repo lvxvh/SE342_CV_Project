@@ -34,7 +34,7 @@ void hslDialog::on_hSlider_valueChanged(int value)
     }
 
     MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->changeHsl(ptr, ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
+    ptr->getIh()->changeHsl(ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
 
 }
 
@@ -76,7 +76,7 @@ void hslDialog::on_sSlider_valueChanged(int value)
     }
 
     MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->changeHsl(ptr, ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
+    ptr->getIh()->changeHsl(ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
 }
 
 void hslDialog::on_sEdit_editingFinished()
@@ -135,7 +135,7 @@ void hslDialog::on_lSlider_valueChanged(int value)
     }
 
     MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->changeHsl(ptr, ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
+    ptr->getIh()->changeHsl(ui->hSlider->value(), ui->sSlider->value(), ui->lSlider->value());
 }
 
 void hslDialog::on_confirmButton_clicked()
@@ -148,6 +148,6 @@ void hslDialog::on_confirmButton_clicked()
 void hslDialog::on_cancelButton_clicked()
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->resetImage(ptr);
+    ptr->getIh()->resetImage();
     this->close();
 }

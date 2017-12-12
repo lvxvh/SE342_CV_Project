@@ -5,8 +5,9 @@
 #include <QObject>
 #include "qhsl.h"
 
-ImageHolder::ImageHolder()
+ImageHolder::ImageHolder(MainWindow *mw)
 {
+    m = mw;
     displayHeight = 0;
     displayWidth = 0;
     reseted = 0;
@@ -18,7 +19,7 @@ ImageHolder::~ImageHolder()
     images.clear();
 }
 
-bool ImageHolder::loadImage(MainWindow *m)
+bool ImageHolder::loadImage()
 {
     if (!images.isEmpty()) images.clear();
     filename = QFileDialog::getOpenFileName(m, QObject::tr("选择图像"), "", QObject::tr("Images (*.png *.bmp *.jpg *.tif *.GIF )"));
@@ -49,14 +50,14 @@ bool ImageHolder::save()
     return displayImage.save(filename);
 }
 
-bool ImageHolder::saveAs(MainWindow *m)
+bool ImageHolder::saveAs()
 {
     QString newName = QFileDialog::getSaveFileName(m, "存储为");
     if(newName.isEmpty()) return false;
     return displayImage.save(newName);
 }
 
-void ImageHolder::fitScreen(MainWindow *m)
+void ImageHolder::fitScreen()
 {
     qint32 iWidth = displayImage.width();
     qint32 iHeight = displayImage.height();
@@ -77,7 +78,7 @@ void ImageHolder::fitScreen(MainWindow *m)
 
 }
 
-void ImageHolder::actualPix(MainWindow *m)
+void ImageHolder::actualPix()
 {   
     displayWidth = images[0].width();
     displayHeight = images[0].height();
@@ -91,7 +92,7 @@ void ImageHolder::actualPix(MainWindow *m)
 
 }
 
-void ImageHolder::rgbChannel(MainWindow *m, qint32 color)
+void ImageHolder::rgbChannel(qint32 color)
 {
     QImage oldImage = images[imgPtr];
     switch (color) {
@@ -139,7 +140,7 @@ void ImageHolder::rgbChannel(MainWindow *m, qint32 color)
 
 }
 
-void ImageHolder::toGray(MainWindow *m)
+void ImageHolder::toGray()
 {
     if(!displayImage.allGray()){
         for(int y = 0;y < displayHeight; ++y){
@@ -160,7 +161,7 @@ void ImageHolder::toGray(MainWindow *m)
     }
 }
 
-void ImageHolder::changeHsl(MainWindow *m, int hOffset, int sOffset, int lOffset)
+void ImageHolder::changeHsl(int hOffset, int sOffset, int lOffset)
 {
     displayImage = images[imgPtr];
     float h, s, l;
@@ -205,16 +206,17 @@ void ImageHolder::changeHsl(MainWindow *m, int hOffset, int sOffset, int lOffset
 void ImageHolder::cacheImage(QString msg)
 {
     if(reseted) {
-        images.erase(images.begin() + (imgPtr + 1));
-        logs.erase(logs.begin() + (imgPtr + 1));
+        images.erase(images.begin() + (imgPtr + 1), images.end());
+        logs.erase(logs.begin() + (imgPtr + 1), logs.end());
         reseted = 0;
     }
     images.push_back(displayImage);
     logs.push_back(msg);
     imgPtr++;
+    m->emitLogsignal();
 }
 
-void ImageHolder::originImage(MainWindow *m)
+void ImageHolder::originImage()
 {
     if(imgPtr > 0){
         displayImage = images[0];
@@ -227,12 +229,24 @@ void ImageHolder::originImage(MainWindow *m)
     }
 }
 
-void ImageHolder::resetImage(MainWindow *m)
+void ImageHolder::resetImage()
 {
     displayImage = images[imgPtr];
     QPixmap pix = QPixmap::fromImage(displayImage);
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
+}
+
+void ImageHolder::changeVersion(int ptr)
+{
+    if(ptr != imgPtr) {
+        displayImage = images[ptr];
+        reseted = 1;
+        imgPtr = ptr;
+        QPixmap pix = QPixmap::fromImage(displayImage);
+        Ui::MainWindow *ui = m->getUi();
+        ui->image->setPixmap(pix);
+    }
 }
 
 QRgb ImageHolder::getRgb(qint32 x, qint32 y)

@@ -23,6 +23,13 @@ public:
 
     ImageHolder *getIh() const;
 
+    void emitLogsignal();
+
+signals:
+    void refreshLog();
+public slots:
+    void changeVersion(int ptr);
+
 private slots:
     void on_action_Open_triggered();
     void on_action_fit_screen_triggered();

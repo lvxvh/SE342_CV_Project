@@ -17,22 +17,23 @@ namespace Ui {
 class MainWindow;
 }
 
-class ImageHolder {
+class ImageHolder{
 public:
-    ImageHolder();
+    ImageHolder(MainWindow *mw);
     ~ImageHolder();
 
-    bool loadImage(MainWindow *m);
+    bool loadImage();
     bool save();
-    bool saveAs(MainWindow *m);
-    void fitScreen(MainWindow *m);
-    void actualPix(MainWindow *m);
-    void rgbChannel(MainWindow *m, qint32 color);
-    void toGray(MainWindow *m);
-    void changeHsl(MainWindow *m, int hOffset, int sOffset, int lOffset);
+    bool saveAs();
+    void fitScreen();
+    void actualPix();
+    void rgbChannel( qint32 color);
+    void toGray();
+    void changeHsl( int hOffset, int sOffset, int lOffset);
     void cacheImage(QString msg);
-    void originImage(MainWindow *m);
-    void resetImage(MainWindow *m);
+    void originImage();
+    void resetImage();
+    void changeVersion(int ptr);
 
     QRgb getRgb(qint32 x, qint32 y);
 
@@ -45,7 +46,10 @@ public:
 
     int getImgPtr() const;
 
+
 private:
+    MainWindow *m;
+
     QString filename;
 
     QVector<QImage> images;
