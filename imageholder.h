@@ -27,17 +27,21 @@ public:
     bool saveAs();
     void fitScreen();
     void actualPix();
+    // color
     void rgbChannel( qint32 color);
     void toGray();
-    void changeHsl( int hOffset, int sOffset, int lOffset);
-
+    void changeHsl(int hOffset, int sOffset, int lOffset);
+    //binary
     void Otsu();
     int getOtsuThreshold();
-
+    void dThreshold(int lo, int hi);
+    //helper
     void cacheImage(QString msg);
+    void draw();
     void originImage();
     void resetImage();
     void changeVersion(int ptr);
+    bool isGray();
 
     QRgb getRgb(qint32 x, qint32 y);
 

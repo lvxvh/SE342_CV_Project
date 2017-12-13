@@ -1,5 +1,5 @@
-#ifndef BINARYDIALOG_H
-#define BINARYDIALOG_H
+#ifndef BIANRYDIALOG_H
+#define BIANRYDIALOG_H
 
 #include <QDialog>
 
@@ -28,14 +28,8 @@ private slots:
 
     void on_lSlider_valueChanged(int value);
 
-    void on_confirmButton_clicked();
-
-    void on_cancelButton_clicked();
-
 private:
     Ui::BinaryDialog *ui;
-
-    void closeEvent(QCloseEvent *e);
 };
 
-#endif // BINARYDIALOG_H
+#endif // BIANRYDIALOG_H

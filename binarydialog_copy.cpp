@@ -1,14 +1,13 @@
-#include "binarydialog.h"
 #include "ui_binarydialog.h"
-#include <QMessageBox>
-#include "mainwindow.h"
+#include "binarydialog.h"
 
+#include "mainwindow.h"
+#include <QMessageBox>
 
 BinaryDialog::BinaryDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::BinaryDialog)
 {
-    setFixedSize(380,240);
     ui->setupUi(this);
 }
 
@@ -107,22 +106,3 @@ void BinaryDialog::on_lSlider_valueChanged(int value)
     ptr->getIh()->dThreshold(ui->lSlider->value(), ui->hSlider->value());
 }
 
-void BinaryDialog::on_confirmButton_clicked()
-{
-    MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->cacheImage(QObject::tr("双阈值二值化"));
-    this->close();
-}
-
-void BinaryDialog::on_cancelButton_clicked()
-{
-    MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->resetImage();
-    this->close();
-}
-
-void BinaryDialog::closeEvent(QCloseEvent *e)
-{
-    MainWindow *ptr = (MainWindow*)parentWidget();
-    ptr->getIh()->resetImage();
-}

@@ -191,15 +191,15 @@
        <item row="0" column="0">
         <widget class="QToolBox" name="toolBox">
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="RGB">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>298</width>
-            <height>271</height>
+            <width>277</width>
+            <height>242</height>
            </rect>
           </property>
           <attribute name="label">
@@ -297,13 +297,13 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="widget">
+         <widget class="QWidget" name="binary">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
             <width>298</width>
-            <height>271</height>
+            <height>241</height>
            </rect>
           </property>
           <attribute name="label">
@@ -338,6 +338,11 @@
             </widget>
            </item>
           </layout>
+         </widget>
+         <widget class="QWidget" name="AGop">
+          <attribute name="label">
+           <string>代数与几何操作</string>
+          </attribute>
          </widget>
         </widget>
        </item>

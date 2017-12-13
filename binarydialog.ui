@@ -6,52 +6,75 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
-    <height>275</height>
+    <width>380</width>
+    <height>240</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
+  <widget class="QLabel" name="llabel">
    <property name="geometry">
     <rect>
-     <x>330</x>
-     <y>10</y>
-     <width>81</width>
-     <height>221</height>
+     <x>20</x>
+     <y>130</y>
+     <width>72</width>
+     <height>15</height>
     </rect>
    </property>
-   <property name="orientation">
-    <enum>Qt::Vertical</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   <property name="text">
+    <string>低阈值</string>
    </property>
   </widget>
-  <widget class="QSlider" name="hSlider">
+  <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>80</y>
-     <width>251</width>
-     <height>22</height>
+     <x>280</x>
+     <y>10</y>
+     <width>95</width>
+     <height>251</height>
     </rect>
    </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-   <property name="value">
-    <number>255</number>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QPushButton" name="confirmButton">
+      <property name="text">
+       <string>确定</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="cancelButton">
+      <property name="text">
+       <string>取消</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
   </widget>
   <widget class="QSlider" name="lSlider">
    <property name="geometry">
     <rect>
-     <x>49</x>
+     <x>19</x>
      <y>170</y>
      <width>251</width>
      <height>22</height>
@@ -64,37 +87,11 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="hlabel">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>40</y>
-     <width>72</width>
-     <height>15</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>高阈值</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="llabel">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>130</y>
-     <width>72</width>
-     <height>15</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>低阈值</string>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="hEdit">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>40</y>
+     <x>220</x>
+     <y>30</y>
      <width>41</width>
      <height>21</height>
     </rect>
@@ -106,10 +103,42 @@
     <string>255</string>
    </property>
   </widget>
+  <widget class="QSlider" name="hSlider">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>71</y>
+     <width>251</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>255</number>
+   </property>
+   <property name="value">
+    <number>255</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="hlabel">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>30</y>
+     <width>72</width>
+     <height>15</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>高阈值</string>
+   </property>
+  </widget>
   <widget class="QLineEdit" name="lEdit">
    <property name="geometry">
     <rect>
-     <x>250</x>
+     <x>220</x>
      <y>130</y>
      <width>41</width>
      <height>21</height>
@@ -124,38 +153,5 @@
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>BinaryDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>BinaryDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

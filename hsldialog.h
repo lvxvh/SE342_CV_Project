@@ -41,6 +41,8 @@ private slots:
 
 private:
     Ui::HslDialog *ui;
+
+    void closeEvent(QCloseEvent *e);
 };
 
 #endif // HBSDIALOG_H

@@ -201,11 +201,19 @@ void MainWindow::on_historyButton_clicked()
 
 void MainWindow::on_otsuButton_clicked()
 {
-    ih->Otsu();
+    if(ih->isGray()) {
+        ih->Otsu();
+    } else {
+        QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
+    }
 }
 
 void MainWindow::on_thresholdButton_clicked()
 {
-    BinaryDialog *dlg = new BinaryDialog(this);
-    dlg->show();
+    if(ih->isGray()) {
+        BinaryDialog *dlg = new BinaryDialog(this);
+        dlg->show();
+    } else {
+        QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
+    }
 }

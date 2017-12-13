@@ -28,9 +28,7 @@ bool ImageHolder::loadImage()
         if(originImage.load(filename)) {
             displayImage = originImage;
             cacheImage(QObject::tr("打开"));
-            QPixmap pix = QPixmap::fromImage(displayImage);
-            Ui::MainWindow *ui = m->getUi();
-            ui->image->setPixmap(pix);
+            draw();
 
             displayWidth = displayImage.width();
             displayHeight = displayImage.height();
@@ -71,11 +69,7 @@ void ImageHolder::fitScreen()
     displayImage = displayImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
     cacheImage(QObject::tr("适应屏幕"));
     //tmpImage = tmpImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
-    QPixmap pix = QPixmap::fromImage(displayImage);
-    ui->image->setPixmap(pix);
-
-
-
+    draw();
 }
 
 void ImageHolder::actualPix()
@@ -85,9 +79,7 @@ void ImageHolder::actualPix()
     displayImage = displayImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
     cacheImage(QObject::tr("实际尺寸"));
     //tmpImage = tmpImage.scaled(displayWidth, displayHeight, Qt::IgnoreAspectRatio);
-    QPixmap pix = QPixmap::fromImage(displayImage);
-    Ui::MainWindow *ui = m->getUi();
-    ui->image->setPixmap(pix);
+    draw();
 
 
 }
@@ -133,10 +125,7 @@ void ImageHolder::rgbChannel(qint32 color)
         break;
     }
 
-    QPixmap pix = QPixmap::fromImage(displayImage);
-
-    Ui::MainWindow *ui = m->getUi();
-    ui->image->setPixmap(pix);
+    draw();
 
 }
 
@@ -154,10 +143,7 @@ void ImageHolder::toGray()
             }
         }
         cacheImage(QObject::tr("转为灰度图像"));
-        QPixmap pix = QPixmap::fromImage(displayImage);
-
-        Ui::MainWindow *ui = m->getUi();
-        ui->image->setPixmap(pix);
+        draw();
     }
 }
 
@@ -198,32 +184,24 @@ void ImageHolder::changeHsl(int hOffset, int sOffset, int lOffset)
             displayImage.setPixel(x, y, hsl.toRgb());
         }
     }
-    QPixmap pix = QPixmap::fromImage(displayImage);
-    Ui::MainWindow *ui = m->getUi();
-    ui->image->setPixmap(pix);
+    draw();
 }
 
 void ImageHolder::Otsu()
 {
-    if(displayImage.allGray()){
-        int threshold = getOtsuThreshold();
-        for(int y = 0;y < displayHeight;++y){
-            for(int x = 0;x < displayWidth;++x){
-                if(qRed(displayImage.pixel(x, y)) > threshold) {
-                    displayImage.setPixel(x,y,qRgb(255,255,255));
-                } else {
-                    displayImage.setPixel(x,y,qRgb(0, 0, 0));
-                }
+    int threshold = getOtsuThreshold();
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            if(qRed(displayImage.pixel(x, y)) > threshold) {
+                displayImage.setPixel(x,y,qRgb(255,255,255));
+            } else {
+                displayImage.setPixel(x,y,qRgb(0, 0, 0));
             }
         }
-
-        cacheImage(QObject::tr("Otsu"));
-        QPixmap pix = QPixmap::fromImage(displayImage);
-        Ui::MainWindow *ui = m->getUi();
-        ui->image->setPixmap(pix);
-    } else {
-        QMessageBox::information(m, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
     }
+
+    cacheImage(QObject::tr("Otsu"));
+    draw();
 }
 
 int ImageHolder::getOtsuThreshold()
@@ -261,6 +239,21 @@ int ImageHolder::getOtsuThreshold()
     return threshold;
 }
 
+void ImageHolder::dThreshold(int lo, int hi)
+{
+    displayImage = images[imgPtr];
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            if(qRed(displayImage.pixel(x, y)) > lo && qRed(displayImage.pixel(x, y)) < hi) {
+                displayImage.setPixel(x,y,qRgb(255,255,255));
+            } else {
+                displayImage.setPixel(x,y,qRgb(0, 0, 0));
+            }
+        }
+    }
+    draw();
+}
+
 void ImageHolder::cacheImage(QString msg)
 {
     if(reseted) {
@@ -274,15 +267,20 @@ void ImageHolder::cacheImage(QString msg)
     m->emitLogsignal();
 }
 
+void ImageHolder::draw()
+{
+    QPixmap pix = QPixmap::fromImage(displayImage);
+    Ui::MainWindow *ui = m->getUi();
+    ui->image->setPixmap(pix);
+}
+
 void ImageHolder::originImage()
 {
     if(imgPtr > 0){
         displayImage = images[0];
         reseted = 1;
         imgPtr = 0;
-        QPixmap pix = QPixmap::fromImage(displayImage);
-        Ui::MainWindow *ui = m->getUi();
-        ui->image->setPixmap(pix);
+        draw();
 
     }
 }
@@ -290,9 +288,7 @@ void ImageHolder::originImage()
 void ImageHolder::resetImage()
 {
     displayImage = images[imgPtr];
-    QPixmap pix = QPixmap::fromImage(displayImage);
-    Ui::MainWindow *ui = m->getUi();
-    ui->image->setPixmap(pix);
+    draw();
 }
 
 void ImageHolder::changeVersion(int ptr)
@@ -301,10 +297,13 @@ void ImageHolder::changeVersion(int ptr)
         displayImage = images[ptr];
         reseted = 1;
         imgPtr = ptr;
-        QPixmap pix = QPixmap::fromImage(displayImage);
-        Ui::MainWindow *ui = m->getUi();
-        ui->image->setPixmap(pix);
+        draw();
     }
+}
+
+bool ImageHolder::isGray()
+{
+    return displayImage.allGray();
 }
 
 QRgb ImageHolder::getRgb(qint32 x, qint32 y)
