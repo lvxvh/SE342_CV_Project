@@ -24,11 +24,13 @@ public:
     ImageHolder *getIh() const;
 
     void emitLogsignal();
+    void freshSide();
 
 signals:
     void refreshLog();
 public slots:
     void changeVersion(int ptr);
+    void changeImage();
 
 private slots:
     void on_action_Open_triggered();
@@ -50,10 +52,13 @@ private slots:
 
     void on_thresholdButton_clicked();
 
+    void on_ScaleButton_clicked();
+
 private:
     Ui::MainWindow *ui;
+    QVector<ImageHolder *> ihs;
     ImageHolder *ih;
-
+    int curImg;
 protected:
     void mouseMoveEvent(QMouseEvent *);
 };

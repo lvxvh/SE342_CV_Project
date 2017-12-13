@@ -35,6 +35,10 @@ public:
     void Otsu();
     int getOtsuThreshold();
     void dThreshold(int lo, int hi);
+    //arithmetic and geometry ops
+    void scale(float factor, bool biliner);
+    void nearestNebr(float factor);
+    void bilinerInt(float factor);
     //helper
     void cacheImage(QString msg);
     void draw();
@@ -53,7 +57,6 @@ public:
     void log(QString msg);
 
     int getImgPtr() const;
-
 
 private:
     MainWindow *m;

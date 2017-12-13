@@ -12,6 +12,7 @@ ImageHolder::ImageHolder(MainWindow *mw)
     displayWidth = 0;
     reseted = 0;
     imgPtr = -1;
+
 }
 
 ImageHolder::~ImageHolder()
@@ -28,10 +29,11 @@ bool ImageHolder::loadImage()
         if(originImage.load(filename)) {
             displayImage = originImage;
             cacheImage(QObject::tr("打开"));
-            draw();
+
 
             displayWidth = displayImage.width();
             displayHeight = displayImage.height();
+            draw();
             return true;
         } else {
             QMessageBox::information(m, QObject::tr("打开图像失败"), QObject::tr("打开图像失败!"));
@@ -254,6 +256,73 @@ void ImageHolder::dThreshold(int lo, int hi)
     draw();
 }
 
+void ImageHolder::scale(float factor, bool biliner)
+{
+    if(biliner)  bilinerInt(factor);
+    else nearestNebr(factor);
+}
+
+void ImageHolder::nearestNebr(float factor)
+{
+    displayImage = images[imgPtr];
+    displayWidth = displayImage.width();
+    displayHeight = displayImage.height();
+
+    int newWidth = floor((displayWidth-1) * factor) + 1;
+    int newHeight = floor((displayHeight-1) * factor) + 1;
+    int sourceX, sourceY;
+    QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
+    for(int y = 0;y < newHeight;++y){
+        for(int x = 0;x < newWidth;++x){
+            sourceX = round(x/factor);
+            sourceY = round(y/factor);
+
+            newImage.setPixel(x,y,displayImage.pixel(sourceX,sourceY));
+        }
+    }
+    displayImage = newImage;
+    displayHeight = newHeight;
+    displayWidth = newWidth;
+    draw();
+}
+
+void ImageHolder::bilinerInt(float factor)
+{
+    displayImage = images[imgPtr];
+    displayWidth = displayImage.width();
+    displayHeight = displayImage.height();
+
+    int newWidth = floor((displayWidth-1) * factor) + 1;
+    int newHeight = floor((displayHeight-1) * factor) + 1;
+    float sourceX, sourceY, u, v;
+    int leftX, bottomY;
+    QRgb p1, p2, p3, p4;
+    int r,g,b;
+    QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
+    for(int y = 0;y < newHeight;++y){
+        for(int x = 0;x < newWidth;++x){
+            sourceX = x/factor;
+            sourceY = y/factor;
+            leftX = floor(sourceX);
+            bottomY = floor(sourceY);
+            u = sourceX - leftX;
+            v = sourceY - bottomY;
+            p1 = displayImage.pixel(leftX, bottomY + 1);
+            p2 = displayImage.pixel(leftX + 1, bottomY + 1);
+            p3 = displayImage.pixel(leftX, bottomY);
+            p4 = displayImage.pixel(leftX + 1, bottomY);
+            r = floor((1 - u)*(1 - v)*qRed(p1) + u*(1 - v)*qRed(p2) + v*(1 - u)*qRed(p3) + u*v*qRed(p4));
+            g = floor((1 - u)*(1 - v)*qGreen(p1) + u*(1 - v)*qGreen(p2) + v*(1 - u)*qGreen(p3) + u*v*qGreen(p4));
+            b = floor((1 - u)*(1 - v)*qBlue(p1) + u*(1 - v)*qBlue(p2) + v*(1 - u)*qBlue(p3) + u*v*qBlue(p4));
+            newImage.setPixel(x,y,qRgb(r,g,b));
+        }
+    }
+    displayImage = newImage;
+    displayHeight = newHeight;
+    displayWidth = newWidth;
+    draw();
+}
+
 void ImageHolder::cacheImage(QString msg)
 {
     if(reseted) {
@@ -278,6 +347,8 @@ void ImageHolder::originImage()
 {
     if(imgPtr > 0){
         displayImage = images[0];
+        displayHeight = displayImage.height();
+        displayWidth = displayImage.width();
         reseted = 1;
         imgPtr = 0;
         draw();
@@ -288,6 +359,8 @@ void ImageHolder::originImage()
 void ImageHolder::resetImage()
 {
     displayImage = images[imgPtr];
+    displayHeight = displayImage.height();
+    displayWidth = displayImage.width();
     draw();
 }
 
@@ -295,6 +368,8 @@ void ImageHolder::changeVersion(int ptr)
 {
     if(ptr != imgPtr) {
         displayImage = images[ptr];
+        displayHeight = displayImage.height();
+        displayWidth = displayImage.width();
         reseted = 1;
         imgPtr = ptr;
         draw();
@@ -330,6 +405,7 @@ int ImageHolder::getImgPtr() const
 {
     return imgPtr;
 }
+
 
 QVector<QString> ImageHolder::getLogs() const
 {

@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     qhsl.cpp \
     mslider.cpp \
     historydialog.cpp \
-    binarydialog.cpp
+    binarydialog.cpp \
+    scaledialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -40,12 +41,14 @@ HEADERS  += mainwindow.h \
     qhsl.h \
     mslider.h \
     historydialog.h \
-    binarydialog.h
+    binarydialog.h \
+    scaledialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
     historydialog.ui \
-    binarydialog.ui
+    binarydialog.ui \
+    scaledialog.ui
 
 RESOURCES += \
     style.qrc

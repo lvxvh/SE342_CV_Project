@@ -4,6 +4,7 @@
 #include "hsldialog.h"
 #include "BinaryDialog.h"
 #include "historydialog.h"
+#include "scaledialog.h"
 #include <QImage>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -13,10 +14,11 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    ih(new ImageHolder(this))
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ih = NULL;
+    curImg = -1;
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
     IconHelper::Instance()->SetIcon(ui->historyButton, QChar(0xf1da), 20);
 }
@@ -24,14 +26,19 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete ih;
+    for(int i = 0;i < ihs.size();++i) delete ihs[i];
+    ihs.clear();
 }
 
 
 
 void MainWindow::on_action_Open_triggered()
 {
+    ih = new ImageHolder(this);
+    ihs.push_back(ih);
+    curImg = ihs.size() - 1;
     ih->loadImage();
+    freshSide();
 }
 
 void MainWindow::on_action_fit_screen_triggered()
@@ -57,14 +64,16 @@ void MainWindow::on_action_SaveAs_triggered()
 
 void MainWindow::mouseMoveEvent(QMouseEvent *e)
 {
-    qint32 x=e->pos().x() - ui->image->pos().x() - 62 + (ui->scrollArea->horizontalScrollBar()->value());
-    qint32 y=e->pos().y() - ui->image->pos().y() - 74 + (ui->scrollArea->verticalScrollBar()->value());
+    if(ih != NULL){
+        qint32 x=e->pos().x() - ui->image->pos().x() - 79 + (ui->scrollArea->horizontalScrollBar()->value());
+        qint32 y=e->pos().y() - ui->image->pos().y() - 85 + (ui->scrollArea->verticalScrollBar()->value());
 
-    if(x >= 0 && x < ih->getDisplayWidth() && y >= 0 && y < ih->getDisplayHeight()) {
-        QRgb rgb = ih->getRgb(x, y);
-        ui->statusBar->showMessage(tr("X:%1 Y:%2 R:%3 G:%4 B:%5").arg(x).arg(y).arg(qRed(rgb)).arg(qGreen(rgb)).arg(qBlue(rgb)));
-    } else
-        ui->statusBar->showMessage("");
+        if(x >= 0 && x < ih->getDisplayWidth() && y >= 0 && y < ih->getDisplayHeight()) {
+            QRgb rgb = ih->getRgb(x, y);
+            ui->statusBar->showMessage(tr("X:%1 Y:%2 R:%3 G:%4 B:%5").arg(x).arg(y).arg(qRed(rgb)).arg(qGreen(rgb)).arg(qBlue(rgb)));
+        } else
+            ui->statusBar->showMessage("");
+    }
 }
 
 void MainWindow::on_detailButton_clicked()
@@ -182,9 +191,56 @@ void MainWindow::emitLogsignal()
     emit refreshLog();
 }
 
+void MainWindow::freshSide()
+{
+    QVBoxLayout *vLayout;
+    if(ui->sideBar->layout() != NULL) { //clean
+        vLayout = (QVBoxLayout*)(ui->sideBar->layout());
+        int itemCount = vLayout->count();
+        for(int i = (itemCount - 1);i >= 0;--i) {
+            QLayoutItem *item = vLayout->takeAt(i);
+            if(item != 0) {
+                vLayout->removeWidget(item->widget());
+                delete item->widget();
+            }
+        }
+        delete vLayout;
+    }
+    vLayout = new QVBoxLayout();
+    vLayout->setMargin(0);
+    vLayout->setSpacing(0);
+    int imgCnts = ihs.size();
+    for(int i = 0; i < imgCnts;i++){
+        QPushButton *btn = new QPushButton(ui->sideBar);
+        btn->setObjectName(QString::number(i, 10));
+        if (i == curImg) {
+            btn->setFocus();
+            IconHelper::Instance()->SetIcon(btn, QChar(0xf03e), 22);
+        } else {
+            IconHelper::Instance()->SetIcon(btn, QChar(0xf03e), 15);
+        }
+        btn->setToolTip(tr("图") + QString::number(i + 1, 10));
+        connect(btn, SIGNAL(clicked()), this, SLOT(changeImage()));
+        vLayout->addWidget(btn);
+    }
+    vLayout->addStretch();
+    ui->sideBar->setLayout(vLayout);
+}
+
 void MainWindow::changeVersion(int ptr)
 {
     ih->changeVersion(ptr);
+}
+
+void MainWindow::changeImage()
+{
+    QPushButton *btn = (QPushButton*)sender();
+    bool ok;
+    int index = btn->objectName().toInt(&ok, 10);
+    curImg = index;
+    ih = ihs[curImg];
+    ih->draw();
+    freshSide();
 }
 
 Ui::MainWindow *MainWindow::getUi() const
@@ -216,4 +272,10 @@ void MainWindow::on_thresholdButton_clicked()
     } else {
         QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
     }
+}
+
+void MainWindow::on_ScaleButton_clicked()
+{
+    ScaleDialog *dlg = new ScaleDialog(this);
+    dlg->show();
 }
