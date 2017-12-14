@@ -264,19 +264,27 @@ void ImageHolder::scale(float factor, bool biliner)
 
 void ImageHolder::nearestNebr(float factor)
 {
+    /*
+     *  0---1---2---3
+     *  *2
+     *  0-1-2-3-4-5-6-7
+     *
+     *  the last pixel should round floor
+     */
     displayImage = images[imgPtr];
     displayWidth = displayImage.width();
     displayHeight = displayImage.height();
 
-    int newWidth = floor((displayWidth-1) * factor) + 1;
-    int newHeight = floor((displayHeight-1) * factor) + 1;
+    int newWidth = floor(displayWidth * factor);
+    int newHeight = floor(displayHeight * factor);
     int sourceX, sourceY;
     QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
     for(int y = 0;y < newHeight;++y){
         for(int x = 0;x < newWidth;++x){
             sourceX = round(x/factor);
+            if(sourceX == displayWidth) sourceX = displayWidth - 1;
             sourceY = round(y/factor);
-
+            if(sourceY == displayHeight) sourceY = displayHeight - 1;
             newImage.setPixel(x,y,displayImage.pixel(sourceX,sourceY));
         }
     }
@@ -288,6 +296,7 @@ void ImageHolder::nearestNebr(float factor)
 
 void ImageHolder::bilinerInt(float factor)
 {
+    //  pixel is the same as the prev one if it's on the border
     displayImage = images[imgPtr];
     displayWidth = displayImage.width();
     displayHeight = displayImage.height();
@@ -304,7 +313,9 @@ void ImageHolder::bilinerInt(float factor)
             sourceX = x/factor;
             sourceY = y/factor;
             leftX = floor(sourceX);
+            if(leftX == displayWidth - 1) leftX = displayWidth - 2;
             bottomY = floor(sourceY);
+            if(bottomY == displayHeight - 1) bottomY = displayHeight - 2;
             u = sourceX - leftX;
             v = sourceY - bottomY;
             p1 = displayImage.pixel(leftX, bottomY + 1);

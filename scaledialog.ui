@@ -82,6 +82,9 @@
       <property name="text">
        <string>放大</string>
       </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item>
@@ -94,6 +97,9 @@
       </property>
       <property name="text">
        <string>缩小</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
       </property>
      </widget>
     </item>
@@ -169,12 +175,18 @@
       <property name="text">
        <string>确认</string>
       </property>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="cancelButton">
       <property name="text">
        <string>取消</string>
+      </property>
+      <property name="autoDefault">
+       <bool>false</bool>
       </property>
      </widget>
     </item>
