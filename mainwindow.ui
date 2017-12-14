@@ -425,7 +425,7 @@
            <string>代数与几何操作</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="2" column="0">
+           <item row="3" column="0">
             <spacer name="verticalSpacer_4">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -449,6 +449,13 @@
             <widget class="QPushButton" name="ScaleButton">
              <property name="text">
               <string>缩放</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="rotateButton">
+             <property name="text">
+              <string>旋转</string>
              </property>
             </widget>
            </item>

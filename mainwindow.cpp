@@ -5,6 +5,7 @@
 #include "BinaryDialog.h"
 #include "historydialog.h"
 #include "scaledialog.h"
+#include "rotatedialog.h"
 #include <QImage>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -277,5 +278,11 @@ void MainWindow::on_thresholdButton_clicked()
 void MainWindow::on_ScaleButton_clicked()
 {
     ScaleDialog *dlg = new ScaleDialog(this);
+    dlg->show();
+}
+
+void MainWindow::on_rotateButton_clicked()
+{
+    RotateDialog *dlg = new RotateDialog(this);
     dlg->show();
 }

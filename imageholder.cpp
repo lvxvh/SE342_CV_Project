@@ -5,6 +5,10 @@
 #include <QObject>
 #include "qhsl.h"
 
+#define PI 3.1415926535
+//角度到弧度转化
+#define RADIAN(angle) ((angle)*PI/180.0)
+
 ImageHolder::ImageHolder(MainWindow *mw)
 {
     m = mw;
@@ -272,6 +276,7 @@ void ImageHolder::nearestNebr(float factor)
      *  the last pixel should round floor
      */
     displayImage = images[imgPtr];
+    //width and height will be modified so refresh here.
     displayWidth = displayImage.width();
     displayHeight = displayImage.height();
 
@@ -328,6 +333,143 @@ void ImageHolder::bilinerInt(float factor)
             newImage.setPixel(x,y,qRgb(r,g,b));
         }
     }
+    displayImage = newImage;
+    displayHeight = newHeight;
+    displayWidth = newWidth;
+    draw();
+}
+
+void ImageHolder::rotate(int angle, bool biliner)
+{
+    if(biliner) bilinerIntRotate(angle);
+    else nearestRotate(angle);
+}
+
+void ImageHolder::nearestRotate(int angle)
+{
+    displayImage = images[imgPtr];
+    displayWidth = displayImage.width();
+    displayHeight = displayImage.height();
+    // origin is the center of image
+    // use 4 coner points compute new size
+    QPoint p1, p2, p3, p4;
+    p1.setX(-displayWidth/2);
+    p1.setY(-displayHeight/2);
+    p2.setX(displayWidth/2);
+    p2.setY(-displayHeight/2);
+    p3.setX(displayWidth/2);
+    p3.setY(displayHeight/2);
+    p4.setX(-displayWidth/2);
+    p4.setY(displayHeight/2);
+
+    QPoint np1, np2, np3, np4;
+
+    double sina = sin(RADIAN(angle));
+
+    double cosa = cos(RADIAN(angle));
+    np1.setX(p1.x()*cosa - p1.y()*sina);
+    np1.setY(p1.x()*sina + p1.y()*cosa);
+    np2.setX(p2.x()*cosa - p2.y()*sina);
+    np2.setY(p2.x()*sina + p2.y()*cosa);
+    np3.setX(p3.x()*cosa - p3.y()*sina);
+    np3.setY(p3.x()*sina + p3.y()*cosa);
+    np4.setX(p4.x()*cosa - p4.y()*sina);
+    np4.setY(p4.x()*sina + p4.y()*cosa);
+
+    int newWidth = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
+    int newHeight = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
+    QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
+    for(int y = 0;y < newHeight;++y){
+        for(int x = 0;x < newWidth;++x){
+            int sourceX = round((x - newWidth/2)*cos(RADIAN(360 - angle)) - (y - newHeight/2)*sin(RADIAN(360 - angle)));
+            int sourceY = round((x - newWidth/2)*sin(RADIAN(360 - angle)) + (y - newHeight/2)*cos(RADIAN(360 - angle)));
+            if(sourceX > displayWidth/2 || sourceX < -displayWidth/2 ||
+                    sourceY > displayHeight/2 || sourceY < -displayHeight/2){
+                newImage.setPixel(x,y,qRgb(48,54,58));
+            } else {
+                sourceX += displayWidth/2;
+                if(sourceX == displayWidth) sourceX = displayWidth - 1;
+                sourceY += displayHeight/2;
+                if(sourceY == displayHeight) sourceY = displayHeight - 1;
+                newImage.setPixel(x, y, displayImage.pixel(sourceX, sourceY));
+            }
+        }
+    }
+
+    displayImage = newImage;
+    displayHeight = newHeight;
+    displayWidth = newWidth;
+    draw();
+}
+
+void ImageHolder::bilinerIntRotate(int angle)
+{
+    displayImage = images[imgPtr];
+    displayWidth = displayImage.width();
+    displayHeight = displayImage.height();
+    // origin is the center of image
+    // use 4 coner points compute new size
+    QPoint p1, p2, p3, p4;
+    p1.setX(-displayWidth/2);
+    p1.setY(-displayHeight/2);
+    p2.setX(displayWidth/2);
+    p2.setY(-displayHeight/2);
+    p3.setX(displayWidth/2);
+    p3.setY(displayHeight/2);
+    p4.setX(-displayWidth/2);
+    p4.setY(displayHeight/2);
+
+    QPoint np1, np2, np3, np4;
+
+    double sina = sin(RADIAN(angle));
+
+    double cosa = cos(RADIAN(angle));
+    np1.setX(p1.x()*cosa - p1.y()*sina);
+    np1.setY(p1.x()*sina + p1.y()*cosa);
+    np2.setX(p2.x()*cosa - p2.y()*sina);
+    np2.setY(p2.x()*sina + p2.y()*cosa);
+    np3.setX(p3.x()*cosa - p3.y()*sina);
+    np3.setY(p3.x()*sina + p3.y()*cosa);
+    np4.setX(p4.x()*cosa - p4.y()*sina);
+    np4.setY(p4.x()*sina + p4.y()*cosa);
+
+    int newWidth = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
+    int newHeight = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
+    QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
+    for(int y = 0;y < newHeight;++y){
+        for(int x = 0;x < newWidth;++x){
+            int sourceX = round((x - newWidth/2)*cos(RADIAN(360 - angle)) - (y - newHeight/2)*sin(RADIAN(360 - angle)));
+            int sourceY = round((x - newWidth/2)*sin(RADIAN(360 - angle)) + (y - newHeight/2)*cos(RADIAN(360 - angle)));
+            if(sourceX > displayWidth/2 || sourceX < -displayWidth/2 ||
+                    sourceY > displayHeight/2 || sourceY < -displayHeight/2){
+                newImage.setPixel(x,y,qRgb(48,54,58));
+            } else {
+                int leftX, bottomY;
+                QRgb p1, p2, p3, p4;
+                int r,g,b;
+                float u,v;
+                sourceX += displayWidth/2;
+                sourceY += displayHeight/2;
+
+                leftX = floor(sourceX);
+                if(leftX >= displayWidth - 1) leftX = displayWidth - 2;
+                bottomY = floor(sourceY);
+                if(bottomY >= displayHeight - 1) bottomY = displayHeight - 2;
+                u = sourceX - leftX;
+                v = sourceY - bottomY;
+                p1 = displayImage.pixel(leftX, bottomY + 1);
+                p2 = displayImage.pixel(leftX + 1, bottomY + 1);
+                p3 = displayImage.pixel(leftX, bottomY);
+                p4 = displayImage.pixel(leftX + 1, bottomY);
+                r = floor((1 - u)*(1 - v)*qRed(p1) + u*(1 - v)*qRed(p2) + v*(1 - u)*qRed(p3) + u*v*qRed(p4));
+                g = floor((1 - u)*(1 - v)*qGreen(p1) + u*(1 - v)*qGreen(p2) + v*(1 - u)*qGreen(p3) + u*v*qGreen(p4));
+                b = floor((1 - u)*(1 - v)*qBlue(p1) + u*(1 - v)*qBlue(p2) + v*(1 - u)*qBlue(p3) + u*v*qBlue(p4));
+
+                newImage.setPixel(x, y, qRgb(r,g,b));
+            }
+        }
+    }
+
     displayImage = newImage;
     displayHeight = newHeight;
     displayWidth = newWidth;

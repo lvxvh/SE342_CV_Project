@@ -39,6 +39,9 @@ public:
     void scale(float factor, bool biliner);
     void nearestNebr(float factor);
     void bilinerInt(float factor);
+    void rotate(int angle, bool biliner);
+    void nearestRotate(int angle);
+    void bilinerIntRotate(int angle);
     //helper
     void cacheImage(QString msg);
     void draw();

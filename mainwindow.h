@@ -54,6 +54,8 @@ private slots:
 
     void on_ScaleButton_clicked();
 
+    void on_rotateButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QVector<ImageHolder *> ihs;
