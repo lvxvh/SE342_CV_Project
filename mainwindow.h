@@ -25,9 +25,11 @@ public:
 
     void emitLogsignal();
     void freshSide();
+    bool sizeEqual(int image1, int image2);
 
 signals:
     void refreshLog();
+    void sendLists(int count);
 public slots:
     void changeVersion(int ptr);
     void changeImage();
@@ -55,6 +57,8 @@ private slots:
     void on_ScaleButton_clicked();
 
     void on_rotateButton_clicked();
+
+    void on_AOPButton_clicked();
 
 private:
     Ui::MainWindow *ui;

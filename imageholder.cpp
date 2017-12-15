@@ -286,10 +286,8 @@ void ImageHolder::nearestNebr(float factor)
     QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
     for(int y = 0;y < newHeight;++y){
         for(int x = 0;x < newWidth;++x){
-            sourceX = round(x/factor);
-            if(sourceX == displayWidth) sourceX = displayWidth - 1;
-            sourceY = round(y/factor);
-            if(sourceY == displayHeight) sourceY = displayHeight - 1;
+            sourceX = round(x/(newWidth/(displayWidth - 1.0f)));
+            sourceY = round(y/(newHeight/(displayHeight - 1.0f)));
             newImage.setPixel(x,y,displayImage.pixel(sourceX,sourceY));
         }
     }
@@ -306,27 +304,27 @@ void ImageHolder::bilinerInt(float factor)
     displayWidth = displayImage.width();
     displayHeight = displayImage.height();
 
-    int newWidth = floor((displayWidth-1) * factor) + 1;
-    int newHeight = floor((displayHeight-1) * factor) + 1;
+    int newWidth = floor(displayWidth * factor);
+    int newHeight = floor(displayHeight * factor);
     float sourceX, sourceY, u, v;
-    int leftX, bottomY;
+    int leftX, topY;
     QRgb p1, p2, p3, p4;
     int r,g,b;
     QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
     for(int y = 0;y < newHeight;++y){
         for(int x = 0;x < newWidth;++x){
-            sourceX = x/factor;
-            sourceY = y/factor;
+            sourceX = x/(newWidth/(displayWidth - 1.0f));
+            sourceY = y/(newHeight/(displayHeight - 1.0f));
             leftX = floor(sourceX);
-            if(leftX == displayWidth - 1) leftX = displayWidth - 2;
-            bottomY = floor(sourceY);
-            if(bottomY == displayHeight - 1) bottomY = displayHeight - 2;
+            //if(leftX == displayWidth - 1) leftX = displayWidth - 2;
+            topY = floor(sourceY);
+            //if(bottomY == displayHeight - 1) bottomY = displayHeight - 2;
             u = sourceX - leftX;
-            v = sourceY - bottomY;
-            p1 = displayImage.pixel(leftX, bottomY + 1);
-            p2 = displayImage.pixel(leftX + 1, bottomY + 1);
-            p3 = displayImage.pixel(leftX, bottomY);
-            p4 = displayImage.pixel(leftX + 1, bottomY);
+            v = sourceY - topY;
+            p1 = displayImage.pixel(leftX, topY);
+            p2 = displayImage.pixel(leftX + 1, topY);
+            p3 = displayImage.pixel(leftX, topY + 1);
+            p4 = displayImage.pixel(leftX + 1, topY + 1);
             r = floor((1 - u)*(1 - v)*qRed(p1) + u*(1 - v)*qRed(p2) + v*(1 - u)*qRed(p3) + u*v*qRed(p4));
             g = floor((1 - u)*(1 - v)*qGreen(p1) + u*(1 - v)*qGreen(p2) + v*(1 - u)*qGreen(p3) + u*v*qGreen(p4));
             b = floor((1 - u)*(1 - v)*qBlue(p1) + u*(1 - v)*qBlue(p2) + v*(1 - u)*qBlue(p3) + u*v*qBlue(p4));
@@ -377,7 +375,7 @@ void ImageHolder::nearestRotate(int angle)
     np4.setY(p4.x()*sina + p4.y()*cosa);
 
     int newWidth = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
-    int newHeight = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
+    int newHeight = qMax(abs(np1.y() - np3.y()),abs(np2.y() - np4.y()));
     QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
     for(int y = 0;y < newHeight;++y){
         for(int x = 0;x < newWidth;++x){
@@ -434,7 +432,7 @@ void ImageHolder::bilinerIntRotate(int angle)
     np4.setY(p4.x()*sina + p4.y()*cosa);
 
     int newWidth = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
-    int newHeight = qMax(abs(np1.x() - np3.x()),abs(np2.x() - np4.x()));
+    int newHeight = qMax(abs(np1.y() - np3.y()),abs(np2.y() - np4.y()));
     QImage newImage(newWidth, newHeight, QImage::Format_RGB32);
     for(int y = 0;y < newHeight;++y){
         for(int x = 0;x < newWidth;++x){
@@ -444,7 +442,7 @@ void ImageHolder::bilinerIntRotate(int angle)
                     sourceY > displayHeight/2 || sourceY < -displayHeight/2){
                 newImage.setPixel(x,y,qRgb(48,54,58));
             } else {
-                int leftX, bottomY;
+                int leftX, topY;
                 QRgb p1, p2, p3, p4;
                 int r,g,b;
                 float u,v;
@@ -453,14 +451,14 @@ void ImageHolder::bilinerIntRotate(int angle)
 
                 leftX = floor(sourceX);
                 if(leftX >= displayWidth - 1) leftX = displayWidth - 2;
-                bottomY = floor(sourceY);
-                if(bottomY >= displayHeight - 1) bottomY = displayHeight - 2;
+                topY = floor(sourceY);
+                if(topY >= displayHeight - 1) topY = displayHeight - 2;
                 u = sourceX - leftX;
-                v = sourceY - bottomY;
-                p1 = displayImage.pixel(leftX, bottomY + 1);
-                p2 = displayImage.pixel(leftX + 1, bottomY + 1);
-                p3 = displayImage.pixel(leftX, bottomY);
-                p4 = displayImage.pixel(leftX + 1, bottomY);
+                v = sourceY - topY;
+                p1 = displayImage.pixel(leftX, topY);
+                p2 = displayImage.pixel(leftX + 1, topY);
+                p3 = displayImage.pixel(leftX, topY + 1);
+                p4 = displayImage.pixel(leftX + 1, topY + 1);
                 r = floor((1 - u)*(1 - v)*qRed(p1) + u*(1 - v)*qRed(p2) + v*(1 - u)*qRed(p3) + u*v*qRed(p4));
                 g = floor((1 - u)*(1 - v)*qGreen(p1) + u*(1 - v)*qGreen(p2) + v*(1 - u)*qGreen(p3) + u*v*qGreen(p4));
                 b = floor((1 - u)*(1 - v)*qBlue(p1) + u*(1 - v)*qBlue(p2) + v*(1 - u)*qBlue(p3) + u*v*qBlue(p4));

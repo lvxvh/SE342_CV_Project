@@ -439,7 +439,7 @@
             </spacer>
            </item>
            <item row="0" column="0">
-            <widget class="QPushButton" name="AOpButton">
+            <widget class="QPushButton" name="AOPButton">
              <property name="text">
               <string>图像加/减/乘</string>
              </property>

@@ -6,6 +6,7 @@
 #include "historydialog.h"
 #include "scaledialog.h"
 #include "rotatedialog.h"
+#include "aopdialog.h"
 #include <QImage>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -178,8 +179,9 @@ void MainWindow::on_grayButton_clicked()
 
 void MainWindow::on_hbsButton_clicked()
 {
-    HslDialog *dlg = new HslDialog(this);
+    HslDialog *dlg = new HslDialog(this);   
     dlg->show();
+    dlg->exec();
 }
 
 ImageHolder *MainWindow::getIh() const
@@ -228,6 +230,20 @@ void MainWindow::freshSide()
     ui->sideBar->setLayout(vLayout);
 }
 
+bool MainWindow::sizeEqual(int image1, int image2)
+{
+    int lwidth,lheight,rwidth,rheight;
+    lwidth = ihs[image1]->getDisplayWidth();
+    lheight = ihs[image1]->getDisplayHeight();
+    rwidth = ihs[image2]->getDisplayWidth();
+    rheight = ihs[image2]->getDisplayHeight();
+    if(lwidth == rwidth && rwidth == rheight){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void MainWindow::changeVersion(int ptr)
 {
     ih->changeVersion(ptr);
@@ -254,6 +270,7 @@ void MainWindow::on_historyButton_clicked()
 {
     HistoryDialog *dlg = new HistoryDialog(this);
     dlg->show();
+    dlg->exec();
 }
 
 void MainWindow::on_otsuButton_clicked()
@@ -279,10 +296,24 @@ void MainWindow::on_ScaleButton_clicked()
 {
     ScaleDialog *dlg = new ScaleDialog(this);
     dlg->show();
+    dlg->exec();
 }
 
 void MainWindow::on_rotateButton_clicked()
 {
     RotateDialog *dlg = new RotateDialog(this);
     dlg->show();
+    dlg->exec();
+}
+
+void MainWindow::on_AOPButton_clicked()
+{
+    AOPDialog *dlg = new AOPDialog(this);
+
+
+    int count = ihs.size();
+
+    sendLists(count);
+    dlg->show();
+    dlg->exec();
 }

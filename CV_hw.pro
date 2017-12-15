@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     historydialog.cpp \
     binarydialog.cpp \
     scaledialog.cpp \
-    rotatedialog.cpp
+    rotatedialog.cpp \
+    aopdialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -44,14 +45,16 @@ HEADERS  += mainwindow.h \
     historydialog.h \
     binarydialog.h \
     scaledialog.h \
-    rotatedialog.h
+    rotatedialog.h \
+    aopdialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
     historydialog.ui \
     binarydialog.ui \
     scaledialog.ui \
-    rotatedialog.ui
+    rotatedialog.ui \
+    aopdialog.ui
 
 RESOURCES += \
     style.qrc
