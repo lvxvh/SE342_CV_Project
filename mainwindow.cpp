@@ -7,11 +7,18 @@
 #include "scaledialog.h"
 #include "rotatedialog.h"
 #include "aopdialog.h"
+#include "cropdialog.h"
+
+#include "croprect.h"
+
 #include <QImage>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QPaintEvent>
 #include <QScrollBar>
+#include <QPainter>
+#include <QDesktopWidget>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -23,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
     curImg = -1;
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
     IconHelper::Instance()->SetIcon(ui->historyButton, QChar(0xf1da), 20);
+    isCropping = 0;
+    cropStarted = 0;
 }
 
 MainWindow::~MainWindow()
@@ -67,15 +76,44 @@ void MainWindow::on_action_SaveAs_triggered()
 void MainWindow::mouseMoveEvent(QMouseEvent *e)
 {
     if(ih != NULL){
-        qint32 x=e->pos().x() - ui->image->pos().x() - 79 + (ui->scrollArea->horizontalScrollBar()->value());
-        qint32 y=e->pos().y() - ui->image->pos().y() - 85 + (ui->scrollArea->verticalScrollBar()->value());
-
-        if(x >= 0 && x < ih->getDisplayWidth() && y >= 0 && y < ih->getDisplayHeight()) {
-            QRgb rgb = ih->getRgb(x, y);
+        QPoint imgPos = mapToImg(e->pos());
+        int x = imgPos.x();
+        int y = imgPos.y();
+        if(isInImg(e->pos())) {
+            QRgb rgb = ih->getRgb(x,y);
             ui->statusBar->showMessage(tr("X:%1 Y:%2 R:%3 G:%4 B:%5").arg(x).arg(y).arg(qRed(rgb)).arg(qGreen(rgb)).arg(qBlue(rgb)));
-        } else
+        } else {
             ui->statusBar->showMessage("");
+        }
+        if ((e->buttons() == Qt::LeftButton) && cropStarted) {
+            if (isInImg(e->pos())) {
+                cropRect.setEnd(mapToImg(e->pos()));
+                ih->drawCropRect(cropRect.getRect());
+                int beginX = qMin(cropRect.startPoint().x(), cropRect.endPoint().x());
+                int beginY = qMin(cropRect.startPoint().y(), cropRect.endPoint().y());
+                sendRectGeo(beginX, beginY,
+                            cropRect.width(), cropRect.height());
+            }
+        }
     }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *e)
+{
+    ih->resetImage();
+    if(isCropping && e->buttons() == Qt::LeftButton) {
+        if(isInImg(e->pos())){
+            cropRect.setStart(mapToImg(e->pos()));
+            cropRect.setEnd(mapToImg(e->pos()));
+            cropStarted = true;
+        }
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *)
+{
+
+    cropStarted = false;
 }
 
 void MainWindow::on_detailButton_clicked()
@@ -180,7 +218,6 @@ void MainWindow::on_grayButton_clicked()
 void MainWindow::on_hbsButton_clicked()
 {
     HslDialog *dlg = new HslDialog(this);   
-    dlg->show();
     dlg->exec();
 }
 
@@ -237,12 +274,68 @@ bool MainWindow::sizeEqual(int image1, int image2)
     lheight = ihs[image1]->getDisplayHeight();
     rwidth = ihs[image2]->getDisplayWidth();
     rheight = ihs[image2]->getDisplayHeight();
-    if(lwidth == rwidth && rwidth == rheight){
+    if(lwidth == rwidth && lheight == rheight){
         return true;
     } else {
         return false;
     }
 }
+
+void MainWindow::AOP(int i1, int i2, int op)
+{
+    QImage image1 = ihs[i1]->getDisplayImage();
+    QImage image2 = ihs[i2]->getDisplayImage();
+    int width = image1.width();
+    int height = image1.height();
+    QImage outImage(width, height, QImage::Format_RGB32);
+    QRgb p1,p2;
+    int r1,g1,b1,r2,g2,b2,r,g,b;
+    for(int y = 0;y < height;++y){
+        for(int x = 0;x < width;++x){
+            p1 = image1.pixel(x,y);
+            r1 = qRed(p1);
+            g1 = qGreen(p1);
+            b1 = qBlue(p1);
+            p2 = image2.pixel(x,y);
+            r2 = qRed(p2);
+            g2 = qGreen(p2);
+            b2 = qBlue(p2);
+            if(op == 0) {
+                r = r1 + r2;
+                if(r > 255) r = 255;
+                g = g1 + g2;
+                if(g > 255) g = 255;
+                b = b1 + b2;
+                if(b > 255) b = 255;
+
+            } else if(op == 1){
+                r = r1 - r2;
+                if(r < 0) r = 0;
+                g = g1 - g2;
+                if(g < 0) g = 0;
+                b = b1 - b2;
+                if(b < 0) b = 0;
+            } else {
+                r = r1 * r2;
+                if(r > 255) r = 255;
+                g = g1 * g2;
+                if(g > 255) g = 255;
+                b = b1 * b2;
+                if(b > 255) b = 255;
+            }
+            outImage.setPixel(x,y,qRgb(r,g,b));
+        }
+    }
+    ih = new ImageHolder(this);
+    ihs.push_back(ih);
+    curImg = ihs.size() -1;
+    ih->setDisplayImage(outImage);
+    ih->cacheImage(tr("打开"));
+    ih->draw();
+    freshSide();
+}
+
+
 
 void MainWindow::changeVersion(int ptr)
 {
@@ -258,6 +351,14 @@ void MainWindow::changeImage()
     ih = ihs[curImg];
     ih->draw();
     freshSide();
+    refreshLog();
+}
+
+void MainWindow::receiveEditedGeo(int x, int y, int w, int h)
+{
+    cropRect.setStart(QPoint(x, y));
+    cropRect.setEnd(QPoint(x + w, y + h));
+    ih->drawCropRect(cropRect.getRect());
 }
 
 Ui::MainWindow *MainWindow::getUi() const
@@ -270,7 +371,6 @@ void MainWindow::on_historyButton_clicked()
 {
     HistoryDialog *dlg = new HistoryDialog(this);
     dlg->show();
-    dlg->exec();
 }
 
 void MainWindow::on_otsuButton_clicked()
@@ -286,7 +386,7 @@ void MainWindow::on_thresholdButton_clicked()
 {
     if(ih->isGray()) {
         BinaryDialog *dlg = new BinaryDialog(this);
-        dlg->show();
+        dlg->exec();
     } else {
         QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
     }
@@ -295,14 +395,12 @@ void MainWindow::on_thresholdButton_clicked()
 void MainWindow::on_ScaleButton_clicked()
 {
     ScaleDialog *dlg = new ScaleDialog(this);
-    dlg->show();
     dlg->exec();
 }
 
 void MainWindow::on_rotateButton_clicked()
 {
     RotateDialog *dlg = new RotateDialog(this);
-    dlg->show();
     dlg->exec();
 }
 
@@ -310,10 +408,39 @@ void MainWindow::on_AOPButton_clicked()
 {
     AOPDialog *dlg = new AOPDialog(this);
 
-
     int count = ihs.size();
 
     sendLists(count);
-    dlg->show();
     dlg->exec();
 }
+
+void MainWindow::on_cutButton_clicked()
+{
+    isCropping = 1;
+    cropRect.reset();
+    CropDialog *dlg = new CropDialog(ih->getDisplayWidth(), ih->getDisplayHeight(), this);
+    dlg->show();
+}
+
+bool MainWindow::isInImg(QPoint pos)
+{
+
+    qint32 x=pos.x() - ui->image->pos().x() - 79 + (ui->scrollArea->horizontalScrollBar()->value());
+    qint32 y=pos.y() - ui->image->pos().y() - 85 + (ui->scrollArea->verticalScrollBar()->value());
+
+    return x >= 0 && x < ih->getDisplayWidth() && y >= 0 && y < ih->getDisplayHeight();
+}
+
+QPoint MainWindow::mapToImg(QPoint point)
+{
+    qint32 x=point.x() - ui->image->pos().x() - 79 + (ui->scrollArea->horizontalScrollBar()->value());
+    qint32 y=point.y() - ui->image->pos().y() - 85 + (ui->scrollArea->verticalScrollBar()->value());
+
+    return QPoint(x, y);
+}
+
+void MainWindow::setIsCropping(bool value)
+{
+    isCropping = value;
+}
+

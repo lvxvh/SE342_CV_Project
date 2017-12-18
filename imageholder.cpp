@@ -26,15 +26,13 @@ ImageHolder::~ImageHolder()
 
 bool ImageHolder::loadImage()
 {
-    if (!images.isEmpty()) images.clear();
+    //if (!images.isEmpty()) images.clear();
     filename = QFileDialog::getOpenFileName(m, QObject::tr("选择图像"), "", QObject::tr("Images (*.png *.bmp *.jpg *.tif *.GIF )"));
     if(!filename.isEmpty()) {
         QImage originImage;
         if(originImage.load(filename)) {
             displayImage = originImage;
             cacheImage(QObject::tr("打开"));
-
-
             displayWidth = displayImage.width();
             displayHeight = displayImage.height();
             draw();
@@ -532,6 +530,32 @@ bool ImageHolder::isGray()
     return displayImage.allGray();
 }
 
+void ImageHolder::drawCropRect(QRect rect)
+{
+    QImage tmp = images[imgPtr];
+
+    QPainter pp;
+    QPen pen; //画笔
+    pen.setColor(QColor(255, 0, 0));
+    pen.setStyle(Qt::DashLine);
+
+    pp.begin(&tmp);
+    pp.setPen(pen); //添加画笔
+
+    pp.drawRect(rect);
+    pp.end();
+
+    setDisplayImage(tmp);
+    draw();
+}
+
+void ImageHolder::crop(QRect rect)
+{
+    setDisplayImage(images[imgPtr].copy(rect));
+    cacheImage("裁剪");
+    draw();
+}
+
 QRgb ImageHolder::getRgb(qint32 x, qint32 y)
 {
     return displayImage.pixel(x, y);
@@ -555,6 +579,18 @@ void ImageHolder::log(QString msg)
 int ImageHolder::getImgPtr() const
 {
     return imgPtr;
+}
+
+QImage ImageHolder::getDisplayImage() const
+{
+    return displayImage;
+}
+
+void ImageHolder::setDisplayImage(const QImage &value)
+{
+    displayImage = value;
+    displayHeight = value.height();
+    displayWidth = value.width();
 }
 
 

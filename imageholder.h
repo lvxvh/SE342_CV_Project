@@ -42,6 +42,9 @@ public:
     void rotate(int angle, bool biliner);
     void nearestRotate(int angle);
     void bilinerIntRotate(int angle);
+    //crop
+    void drawCropRect(QRect rect);
+    void crop(QRect rect);
     //helper
     void cacheImage(QString msg);
     void draw();
@@ -60,6 +63,9 @@ public:
     void log(QString msg);
 
     int getImgPtr() const;
+
+    QImage getDisplayImage() const;
+    void setDisplayImage(const QImage &value);
 
 private:
     MainWindow *m;

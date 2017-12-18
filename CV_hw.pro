@@ -34,7 +34,9 @@ SOURCES += main.cpp\
     binarydialog.cpp \
     scaledialog.cpp \
     rotatedialog.cpp \
-    aopdialog.cpp
+    aopdialog.cpp \
+    mylabel.cpp \
+    cropdialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -46,7 +48,10 @@ HEADERS  += mainwindow.h \
     binarydialog.h \
     scaledialog.h \
     rotatedialog.h \
-    aopdialog.h
+    aopdialog.h \
+    croprect.h \
+    mylabel.h \
+    cropdialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
@@ -54,7 +59,9 @@ FORMS    += mainwindow.ui \
     binarydialog.ui \
     scaledialog.ui \
     rotatedialog.ui \
-    aopdialog.ui
+    aopdialog.ui \
+    cropdialog.ui \
+    photoshotdialog.ui
 
 RESOURCES += \
     style.qrc

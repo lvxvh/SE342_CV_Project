@@ -20,6 +20,8 @@ private slots:
 
     void on_confirmButton_clicked();
 
+    void on_cancelButton_clicked();
+
 private:
     Ui::AOPDialog *ui;
 };
