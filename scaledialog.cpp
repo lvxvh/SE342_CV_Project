@@ -22,7 +22,6 @@ ScaleDialog::~ScaleDialog()
 void ScaleDialog::on_factorEdit_editingFinished()
 {
     if(ui->factorEdit->hasFocus()){
-        bool ok;
         float value = ui->factorEdit->text().toFloat();
         if(value < 0.1f || value > 1600.0f) {
             QMessageBox::information(this, tr("错误"), tr("要求输入值在0.1~1600之间"));
@@ -52,7 +51,7 @@ void ScaleDialog::on_confirmButton_clicked()
     this->close();
 }
 
-void ScaleDialog::closeEvent(QCloseEvent *e)
+void ScaleDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();

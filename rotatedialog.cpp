@@ -72,7 +72,7 @@ void RotateDialog::on_cancelButton_clicked()
     this->close();
 }
 
-void RotateDialog::closeEvent(QCloseEvent *e)
+void RotateDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();

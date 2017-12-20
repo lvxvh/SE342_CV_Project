@@ -16,7 +16,7 @@ ImageHolder::ImageHolder(MainWindow *mw)
     displayWidth = 0;
     reseted = 0;
     imgPtr = -1;
-
+    channalCheckPoint = -1;
 }
 
 ImageHolder::~ImageHolder()
@@ -32,6 +32,7 @@ bool ImageHolder::loadImage()
         QImage originImage;
         if(originImage.load(filename)) {
             displayImage = originImage;
+            channal = RGB_ALL;
             cacheImage(QObject::tr("打开"));
             displayWidth = displayImage.width();
             displayHeight = displayImage.height();
@@ -88,67 +89,27 @@ void ImageHolder::actualPix()
 
 }
 
-void ImageHolder::rgbChannel(qint32 color)
-{
-    QImage oldImage = images[imgPtr];
-    switch (color) {
-    case RGB_R:
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = oldImage.pixel(x,y);
-                displayImage.setPixel(x, y, qRgb(qRed(pixel), qRed(pixel), qRed(pixel)));
-            }
-        }
-        break;
-    case RGB_G:
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = oldImage.pixel(x,y);
-                displayImage.setPixel(x, y, qRgb(qGreen(pixel), qGreen(pixel), qGreen(pixel)));
-            }
-        }
-        break;
-    case RGB_B:
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = oldImage.pixel(x,y);
-                displayImage.setPixel(x, y, qRgb(qBlue(pixel), qBlue(pixel), qBlue(pixel)));
-            }
-        }
-        break;
-    default:
-        bool r = color & 1;
-        bool g = (color >> 1) & 1;
-        bool b = (color >> 2) & 1;
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = oldImage.pixel(x,y);
-                displayImage.setPixel(x, y, qRgb(qRed(pixel)*r, qGreen(pixel)*g, qBlue(pixel)*b));
-            }
-        }
-        break;
-    }
-
-    draw();
-
-}
-
 void ImageHolder::toGray()
 {
-    if(!displayImage.allGray()){
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = displayImage.pixel(x,y);
-                qint32 r=qRed(pixel);
-                qint32 g=qGreen(pixel);
-                qint32 b=qBlue(pixel);
-                qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
-                displayImage.setPixel(x, y, qRgb(gray, gray, gray));
-            }
+    for(int y = 0;y < displayHeight; ++y){
+        for(int x = 0;x < displayWidth; ++x){
+            QRgb pixel = displayImage.pixel(x,y);
+            qint32 r=qRed(pixel);
+            qint32 g=qGreen(pixel);
+            qint32 b=qBlue(pixel);
+            qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
+            displayImage.setPixel(x, y, qRgb(gray, gray, gray));
         }
-        cacheImage(QObject::tr("转为灰度图像"));
-        draw();
     }
+    channal = GRAY;
+    cacheImage(QObject::tr("转为灰度图像"));
+    channalCheckPoint = imgPtr;             //checkpoint
+
+    Ui::MainWindow *ui = m->getUi();
+    ui->toolBox->setCurrentIndex(1);
+
+    draw();
+    //切换page
 }
 
 void ImageHolder::changeHsl(int hOffset, int sOffset, int lOffset)
@@ -477,6 +438,9 @@ void ImageHolder::cacheImage(QString msg)
     if(reseted) {
         images.erase(images.begin() + (imgPtr + 1), images.end());
         logs.erase(logs.begin() + (imgPtr + 1), logs.end());
+        if(imgPtr < channalCheckPoint){
+            channalCheckPoint = -1;
+        }
         reseted = 0;
     }
     images.push_back(displayImage);
@@ -487,7 +451,40 @@ void ImageHolder::cacheImage(QString msg)
 
 void ImageHolder::draw()
 {
-    QPixmap pix = QPixmap::fromImage(displayImage);
+    outImage = displayImage;
+    if(channal == RGB_R){
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                outImage.setPixel(x, y, qRgb(qRed(pixel), qRed(pixel), qRed(pixel)));
+            }
+        }
+    } else if(channal == RGB_G) {
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                outImage.setPixel(x, y, qRgb(qGreen(pixel), qGreen(pixel), qGreen(pixel)));
+            }
+        }
+    } else if(channal == RGB_B) {
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                outImage.setPixel(x, y, qRgb(qBlue(pixel), qBlue(pixel), qBlue(pixel)));
+            }
+        }
+    } else if(channal != GRAY) {
+        bool r = channal & 1;
+        bool g = (channal >> 1) & 1;
+        bool b = (channal >> 2) & 1;
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                outImage.setPixel(x, y, qRgb(qRed(pixel)*r, qGreen(pixel)*g, qBlue(pixel)*b));
+            }
+        }
+    }
+    QPixmap pix = QPixmap::fromImage(outImage);
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
 }
@@ -519,15 +516,23 @@ void ImageHolder::changeVersion(int ptr)
         displayImage = images[ptr];
         displayHeight = displayImage.height();
         displayWidth = displayImage.width();
-        reseted = 1;
+        reseted = 1;    //used in truncate
         imgPtr = ptr;
+        Ui::MainWindow *ui = m->getUi();
+        if (imgPtr >= channalCheckPoint){
+            setChannal(GRAY);
+            ui->toolBox->setCurrentIndex(1);
+        } else{
+            setChannal(RGB_ALL);
+            ui->toolBox->setCurrentIndex(0);
+        }
         draw();
     }
 }
 
 bool ImageHolder::isGray()
 {
-    return displayImage.allGray();
+    return channal == GRAY;
 }
 
 void ImageHolder::drawCropRect(QRect rect)
@@ -591,6 +596,22 @@ void ImageHolder::setDisplayImage(const QImage &value)
     displayImage = value;
     displayHeight = value.height();
     displayWidth = value.width();
+}
+
+int ImageHolder::getChannal() const
+{
+    return channal;
+}
+
+void ImageHolder::setChannal(int value)
+{
+    channal = value;
+    draw();
+}
+
+QImage ImageHolder::getOutImage() const
+{
+    return outImage;
 }
 
 

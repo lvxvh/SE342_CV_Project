@@ -7,9 +7,12 @@
 #include<QImage>
 #include "mainwindow.h"
 
+//channal
 #define RGB_R 1
 #define RGB_G 2
 #define RGB_B 4
+#define RGB_ALL 7
+#define GRAY 0
 
 class MainWindow;
 
@@ -67,6 +70,12 @@ public:
     QImage getDisplayImage() const;
     void setDisplayImage(const QImage &value);
 
+    int getChannal() const;
+
+    void setChannal(int value);
+
+    QImage getOutImage() const;
+
 private:
     MainWindow *m;
 
@@ -78,6 +87,9 @@ private:
     int imgPtr;
 
     QImage displayImage;
+    QImage outImage;       //copy
+    int channal;
+    int channalCheckPoint;  //checkpoint when rgb img -> gray img used in change version
 
     qint32 displayWidth;
     qint32 displayHeight;

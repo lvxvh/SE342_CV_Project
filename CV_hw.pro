@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     rotatedialog.cpp \
     aopdialog.cpp \
     mylabel.cpp \
-    cropdialog.cpp
+    cropdialog.cpp \
+    contrastlinerdialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -51,7 +52,8 @@ HEADERS  += mainwindow.h \
     aopdialog.h \
     croprect.h \
     mylabel.h \
-    cropdialog.h
+    cropdialog.h \
+    contrastlinerdialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
@@ -61,7 +63,8 @@ FORMS    += mainwindow.ui \
     rotatedialog.ui \
     aopdialog.ui \
     cropdialog.ui \
-    photoshotdialog.ui
+    photoshotdialog.ui \
+    contrastlinerdialog.ui
 
 RESOURCES += \
     style.qrc

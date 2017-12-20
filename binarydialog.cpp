@@ -121,7 +121,7 @@ void BinaryDialog::on_cancelButton_clicked()
     this->close();
 }
 
-void BinaryDialog::closeEvent(QCloseEvent *e)
+void BinaryDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();

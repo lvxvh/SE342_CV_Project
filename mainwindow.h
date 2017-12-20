@@ -66,6 +66,14 @@ private slots:
 
     void on_cutButton_clicked();
 
+    void on_copyButton_clicked();
+
+    void on_closeButton_clicked();
+
+    void on_toolBox_currentChanged(int index);
+
+    void on_linerButton_clicked();
+
 private:
     //cutting
     bool isInImg(QPoint pos);

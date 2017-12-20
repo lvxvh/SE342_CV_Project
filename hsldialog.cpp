@@ -152,7 +152,7 @@ void HslDialog::on_cancelButton_clicked()
     this->close();
 }
 
-void HslDialog::closeEvent(QCloseEvent *e)
+void HslDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();

@@ -8,7 +8,7 @@
 #include "rotatedialog.h"
 #include "aopdialog.h"
 #include "cropdialog.h"
-
+#include "contrastlinerdialog.h"
 #include "croprect.h"
 
 #include <QImage>
@@ -28,8 +28,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ih = NULL;
     curImg = -1;
+    IconHelper::Instance()->SetIcon(ui->closeButton, QChar(0xf00d), 20);
+
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
     IconHelper::Instance()->SetIcon(ui->historyButton, QChar(0xf1da), 20);
+    IconHelper::Instance()->SetIcon(ui->copyButton, QChar(0xf0c5), 20);
     isCropping = 0;
     cropStarted = 0;
 }
@@ -81,7 +84,14 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
         int y = imgPos.y();
         if(isInImg(e->pos())) {
             QRgb rgb = ih->getRgb(x,y);
-            ui->statusBar->showMessage(tr("X:%1 Y:%2 R:%3 G:%4 B:%5").arg(x).arg(y).arg(qRed(rgb)).arg(qGreen(rgb)).arg(qBlue(rgb)));
+            int channal = ih->getChannal();
+            bool r = 1,g = 1, b = 1;
+            if(channal != GRAY) {
+                r = channal & 1;
+                g = (channal >> 1) & 1;
+                b = (channal >> 2) & 1;
+            }
+            ui->statusBar->showMessage(tr("X:%1 Y:%2 R:%3 G:%4 B:%5").arg(x).arg(y).arg(qRed(rgb)*r).arg(qGreen(rgb)*g).arg(qBlue(rgb)*b));
         } else {
             ui->statusBar->showMessage("");
         }
@@ -100,19 +110,20 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 
 void MainWindow::mousePressEvent(QMouseEvent *e)
 {
-    ih->resetImage();
-    if(isCropping && e->buttons() == Qt::LeftButton) {
-        if(isInImg(e->pos())){
-            cropRect.setStart(mapToImg(e->pos()));
-            cropRect.setEnd(mapToImg(e->pos()));
-            cropStarted = true;
+    if(ih != NULL) {
+        ih->resetImage();
+        if(isCropping && e->buttons() == Qt::LeftButton) {
+            if(isInImg(e->pos())){
+                cropRect.setStart(mapToImg(e->pos()));
+                cropRect.setEnd(mapToImg(e->pos()));
+                cropStarted = true;
+            }
         }
     }
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *)
 {
-
     cropStarted = false;
 }
 
@@ -127,7 +138,7 @@ void MainWindow::on_rButton_clicked()
     if(ui->rgbButton->checkState() == Qt::Checked) {
         ui->rgbButton->setCheckState(Qt::Unchecked);
         color = RGB_G + RGB_B;
-        ih->rgbChannel(color);
+        ih->setChannal(color);
     } else {
         if(ui->rButton->checkState() == Qt::Checked){
             color += RGB_R;
@@ -138,10 +149,10 @@ void MainWindow::on_rButton_clicked()
         if(ui->bButton->checkState() == Qt::Checked){
             color += RGB_B;
         }
-        if(color == RGB_R + RGB_G + RGB_B){
+        if(color == RGB_ALL){
             ui->rgbButton->setCheckState(Qt::Checked);
         }
-        if(color != 0) ih->rgbChannel(color);
+        if(color != 0) ih->setChannal(color);
         else ui->rButton->setCheckState(Qt::Checked);
     }
 }
@@ -149,11 +160,11 @@ void MainWindow::on_rButton_clicked()
 void MainWindow::on_rgbButton_clicked()
 {
     if(ui->rgbButton->checkState() == Qt::Checked) {
-        qint32 color = RGB_R + RGB_G + RGB_B;
+        qint32 color = RGB_ALL;
         ui->rButton->setCheckState(Qt::Checked);
         ui->gButton->setCheckState(Qt::Checked);
         ui->bButton->setCheckState(Qt::Checked);
-        ih->rgbChannel(color);
+        ih->setChannal(color);
 
     } else {
         ui->rgbButton->setCheckState(Qt::Checked);
@@ -166,7 +177,7 @@ void MainWindow::on_gButton_clicked()
     if(ui->rgbButton->checkState() == Qt::Checked) {
         ui->rgbButton->setCheckState(Qt::Unchecked);
         color = RGB_R + RGB_B;
-        ih->rgbChannel(color);
+        ih->setChannal(color);
     } else {
         if(ui->rButton->checkState() == Qt::Checked){
             color += RGB_R;
@@ -177,10 +188,10 @@ void MainWindow::on_gButton_clicked()
         if(ui->bButton->checkState() == Qt::Checked){
             color += RGB_B;
         }
-        if(color == RGB_R + RGB_G + RGB_B){
+        if(color == RGB_ALL){
             ui->rgbButton->setCheckState(Qt::Checked);
         }
-        if(color != 0) ih->rgbChannel(color);
+        if(color != 0) ih->setChannal(color);
         else ui->gButton->setCheckState(Qt::Checked);
     }
 }
@@ -191,7 +202,7 @@ void MainWindow::on_bButton_clicked()
     if(ui->rgbButton->checkState() == Qt::Checked) {
         ui->rgbButton->setCheckState(Qt::Unchecked);
         color = RGB_R + RGB_G;
-        ih->rgbChannel(color);
+        ih->setChannal(color);
     } else {
         if(ui->rButton->checkState() == Qt::Checked){
             color += RGB_R;
@@ -202,10 +213,10 @@ void MainWindow::on_bButton_clicked()
         if(ui->bButton->checkState() == Qt::Checked){
             color += RGB_B;
         }
-        if(color == RGB_R + RGB_G + RGB_B){
+        if(color == RGB_ALL){
             ui->rgbButton->setCheckState(Qt::Checked);
         }
-        if(color != 0) ih->rgbChannel(color);
+        if(color != 0) ih->setChannal(color);
         else ui->bButton->setCheckState(Qt::Checked);
     }
 }
@@ -444,3 +455,68 @@ void MainWindow::setIsCropping(bool value)
     isCropping = value;
 }
 
+
+void MainWindow::on_copyButton_clicked()
+{
+    QImage cur = ih->getOutImage();
+    ih = new ImageHolder(this);
+    ihs.push_back(ih);
+    curImg = ihs.size() - 1;
+    ih->setDisplayImage(cur);
+    ih->cacheImage("打开");
+    freshSide();
+}
+
+void MainWindow::on_closeButton_clicked()
+{
+    ihs.erase(ihs.begin() + curImg);
+    curImg = ihs.size() - 1;
+    if(curImg >= 0){
+        ih = ihs[curImg];
+        ih->draw();
+    } else {
+        ih = NULL;
+        ui->image->clear();
+    }
+    freshSide();
+}
+
+void MainWindow::on_toolBox_currentChanged(int index)
+{
+    if(ih == NULL) {
+        ui->toolBox->setCurrentIndex(4);
+    } else {
+        int channal = ih->getChannal();
+        if(index == 0){
+            if (channal == GRAY){
+                ui->toolBox->setCurrentIndex(4);
+                QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理彩色图像"));
+            } else {
+                bool r = channal & 1;
+                bool g = (channal >> 1) & 1;
+                bool b = (channal >> 2) & 1;
+                if(r){
+                    ui->rButton->setCheckState(Qt::Checked);
+                }
+                if(g){
+                    ui->rButton->setCheckState(Qt::Checked);
+                }
+                if(b){
+                    ui->rButton->setCheckState(Qt::Checked);
+                }
+                if(r && g && b){
+                    ui->rgbButton->setCheckState(Qt::Checked);
+                }
+            }
+        } else if(index == 1 && channal != GRAY){
+            ui->toolBox->setCurrentIndex(4);
+            QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
+        }
+    }
+}
+
+void MainWindow::on_linerButton_clicked()
+{
+    ContrastLinerDialog *dlg = new ContrastLinerDialog(this);
+    dlg->exec();
+}

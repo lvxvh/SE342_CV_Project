@@ -34,9 +34,10 @@ private slots:
 
 private:
     void reportChange();
-    Ui::CropDialog *ui;
     int oWidth;
     int oHeight;
+    Ui::CropDialog *ui;
+
 protected:
     void closeEvent(QCloseEvent *e);
 };

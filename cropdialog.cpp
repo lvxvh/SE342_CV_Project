@@ -5,13 +5,13 @@
 #include <QDebug>
 
 CropDialog::CropDialog(int w, int h, QWidget *parent) :
-    oWidth(w),
-    oHeight(h),
     QDialog(parent),
     ui(new Ui::CropDialog)
 {
     //setWindowFlags(Qt::WindowStaysOnTopHint);
     ui->setupUi(this);
+    oWidth = w;
+    oHeight = h;
     ui->widthLabel->setText(QString::number(oWidth, 10));
     ui->heightLabel->setText(QString::number(oHeight, 10));
     connect(parent, SIGNAL(sendRectGeo(int,int,int,int)), this, SLOT(receiveRecGeo(int,int,int,int)));
@@ -113,7 +113,7 @@ void CropDialog::reportChange()
                   ui->widthEdit->text().toInt(), ui->heightEdit->text().toInt());
 }
 
-void CropDialog::closeEvent(QCloseEvent *e)
+void CropDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *m = (MainWindow *)parentWidget();
 
