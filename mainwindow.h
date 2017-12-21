@@ -74,6 +74,8 @@ private slots:
 
     void on_linerButton_clicked();
 
+    void on_nonlinerButton_clicked();
+
 private:
     //cutting
     bool isInImg(QPoint pos);

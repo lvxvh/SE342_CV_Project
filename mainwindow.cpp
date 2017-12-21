@@ -9,6 +9,7 @@
 #include "aopdialog.h"
 #include "cropdialog.h"
 #include "contrastlinerdialog.h"
+#include "contrastcruvedialog.h"
 #include "croprect.h"
 
 #include <QImage>
@@ -381,6 +382,7 @@ Ui::MainWindow *MainWindow::getUi() const
 void MainWindow::on_historyButton_clicked()
 {
     HistoryDialog *dlg = new HistoryDialog(this);
+    dlg->setWindowTitle(tr("历史记录"));
     dlg->show();
 }
 
@@ -397,6 +399,7 @@ void MainWindow::on_thresholdButton_clicked()
 {
     if(ih->isGray()) {
         BinaryDialog *dlg = new BinaryDialog(this);
+        dlg->setWindowTitle(tr("双阈值"));
         dlg->exec();
     } else {
         QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
@@ -406,19 +409,21 @@ void MainWindow::on_thresholdButton_clicked()
 void MainWindow::on_ScaleButton_clicked()
 {
     ScaleDialog *dlg = new ScaleDialog(this);
+    dlg->setWindowTitle(tr("放缩"));
     dlg->exec();
 }
 
 void MainWindow::on_rotateButton_clicked()
 {
     RotateDialog *dlg = new RotateDialog(this);
+    dlg->setWindowTitle(tr("旋转"));
     dlg->exec();
 }
 
 void MainWindow::on_AOPButton_clicked()
 {
     AOPDialog *dlg = new AOPDialog(this);
-
+    dlg->setWindowTitle(tr("代数操作"));
     int count = ihs.size();
 
     sendLists(count);
@@ -508,7 +513,7 @@ void MainWindow::on_toolBox_currentChanged(int index)
                     ui->rgbButton->setCheckState(Qt::Checked);
                 }
             }
-        } else if(index == 1 && channal != GRAY){
+        } else if((index == 1 || index == 3)&& channal != GRAY){
             ui->toolBox->setCurrentIndex(4);
             QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
         }
@@ -517,6 +522,14 @@ void MainWindow::on_toolBox_currentChanged(int index)
 
 void MainWindow::on_linerButton_clicked()
 {
-    ContrastLinerDialog *dlg = new ContrastLinerDialog(this);
+    ContrastLinerDialog *dlg = new ContrastLinerDialog(ih->isGray(), this);
+    dlg->setWindowTitle(tr("对比度线性变换"));
+    dlg->exec();
+}
+
+void MainWindow::on_nonlinerButton_clicked()
+{
+    ContrastCruveDialog *dlg = new ContrastCruveDialog(this);
+    dlg->setWindowTitle(tr("对比度非线性变换"));
     dlg->exec();
 }

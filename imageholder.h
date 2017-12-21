@@ -48,6 +48,9 @@ public:
     //crop
     void drawCropRect(QRect rect);
     void crop(QRect rect);
+    //contrast
+    void contrastLiner(QVector<QPoint> points, int chanl);
+
     //helper
     void cacheImage(QString msg);
     void draw();

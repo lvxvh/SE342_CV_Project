@@ -561,6 +561,31 @@ void ImageHolder::crop(QRect rect)
     draw();
 }
 
+void ImageHolder::contrastLiner(QVector<QPoint> points, int chanl)
+{
+    displayImage = images[imgPtr];
+    if(chanl == GRAY){
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = displayImage.pixel(x,y);
+                for(int i = 0;i < points.size() - 1;++i){
+                    if(qRed(pixel) <= points[i + 1].x()){
+                        int a = points[i].x();
+                        int b = points[i + 1].x();
+                        int c = 255 - points[i].y();
+                        int d = 255 - points[i + 1].y();
+                        int out = round((d - c)*(qRed(pixel) - a)*1.0f/(b - a)) + c;
+                        if(out > 255) out = 255;
+                        displayImage.setPixel(x,y,qRgb(out, out, out));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    draw();
+}
+
 QRgb ImageHolder::getRgb(qint32 x, qint32 y)
 {
     return displayImage.pixel(x, y);
