@@ -76,6 +76,16 @@ private slots:
 
     void on_nonlinerButton_clicked();
 
+    void on_HGButton_clicked();
+
+    void on_filterButton_clicked();
+
+    void on_sobelButton_clicked();
+
+    void on_laplacianButton_clicked();
+
+    void on_cannyButton_clicked();
+
 private:
     //cutting
     bool isInImg(QPoint pos);

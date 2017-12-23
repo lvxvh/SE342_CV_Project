@@ -24,6 +24,7 @@ private:
     QVector<QPoint> points;
 protected:
     void paintEvent(QPaintEvent *);
+    void closeEvent(QCloseEvent *);
 private slots:
     void on_aEdit_editingFinished();
     void on_bEdit_editingFinished();
@@ -32,6 +33,8 @@ private slots:
     void on_aSlider_valueChanged(int value);
     void on_bSlider_valueChanged(int value);
     void on_cSlider_valueChanged(int value);
+    void on_confirmButton_clicked();
+    void on_cancelButton_clicked();
 };
 
 #endif // CONTRASTCRUVEDIALOG_H

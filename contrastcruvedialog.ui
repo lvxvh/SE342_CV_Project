@@ -253,8 +253,8 @@
   <widget class="QPushButton" name="confirmButton">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>340</y>
+     <x>460</x>
+     <y>370</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -269,8 +269,8 @@
   <widget class="QPushButton" name="cancelButton">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>380</y>
+     <x>580</x>
+     <y>370</y>
      <width>93</width>
      <height>28</height>
     </rect>

@@ -10,6 +10,8 @@
 #include "cropdialog.h"
 #include "contrastlinerdialog.h"
 #include "contrastcruvedialog.h"
+#include "histogramdialog.h"
+#include "filterdialog.h"
 #include "croprect.h"
 
 #include <QImage>
@@ -513,7 +515,7 @@ void MainWindow::on_toolBox_currentChanged(int index)
                     ui->rgbButton->setCheckState(Qt::Checked);
                 }
             }
-        } else if((index == 1 || index == 3)&& channal != GRAY){
+        } else if((index == 1 || index == 3 || index == 4 || index == 5)&& channal != GRAY){
             ui->toolBox->setCurrentIndex(4);
             QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
         }
@@ -532,4 +534,33 @@ void MainWindow::on_nonlinerButton_clicked()
     ContrastCruveDialog *dlg = new ContrastCruveDialog(this);
     dlg->setWindowTitle(tr("对比度非线性变换"));
     dlg->exec();
+}
+
+void MainWindow::on_HGButton_clicked()
+{
+    HistogramDialog *dlg = new HistogramDialog(this);
+    dlg->setWindowTitle(tr("直方图"));
+    dlg->exec();
+}
+
+void MainWindow::on_filterButton_clicked()
+{
+    FilterDialog *dlg = new FilterDialog(this);
+    dlg->setWindowTitle(tr("滤波器"));
+    dlg->exec();
+}
+
+void MainWindow::on_sobelButton_clicked()
+{
+    ih->sobel();
+}
+
+void MainWindow::on_laplacianButton_clicked()
+{
+    ih->laplace();
+}
+
+void MainWindow::on_cannyButton_clicked()
+{
+    ih->canny();
 }

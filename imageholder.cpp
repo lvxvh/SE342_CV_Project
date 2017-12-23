@@ -91,14 +91,29 @@ void ImageHolder::actualPix()
 
 void ImageHolder::toGray()
 {
-    for(int y = 0;y < displayHeight; ++y){
-        for(int x = 0;x < displayWidth; ++x){
-            QRgb pixel = displayImage.pixel(x,y);
-            qint32 r=qRed(pixel);
-            qint32 g=qGreen(pixel);
-            qint32 b=qBlue(pixel);
-            qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
-            displayImage.setPixel(x, y, qRgb(gray, gray, gray));
+    outImage = getFilteredImage();
+    if(channal != RGB_R && channal != RGB_G && channal != RGB_B)
+    {
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                qint32 r=qRed(pixel);
+                qint32 g=qGreen(pixel);
+                qint32 b=qBlue(pixel);
+                qint32 gray = qGray(r, g, b); //Gray = (R * 11 + G * 16 + B * 5)/32
+                displayImage.setPixel(x, y, qRgb(gray, gray, gray));
+            }
+        }
+    } else {
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                qint32 r=qRed(pixel);
+                qint32 g=qGreen(pixel);
+                qint32 b=qBlue(pixel);
+                qint32 gray = r*(channal == RGB_R) + g*(channal == RGB_G) + b*(channal == RGB_B);
+                displayImage.setPixel(x, y, qRgb(gray, gray, gray));
+            }
         }
     }
     channal = GRAY;
@@ -150,6 +165,23 @@ void ImageHolder::changeHsl(int hOffset, int sOffset, int lOffset)
         }
     }
     draw();
+}
+
+QImage ImageHolder::getFilteredImage()
+{
+    outImage = displayImage;
+    if(channal != GRAY && channal != RGB_ALL) {
+        bool r = channal & 1;
+        bool g = (channal >> 1) & 1;
+        bool b = (channal >> 2) & 1;
+        for(int y = 0;y < displayHeight; ++y){
+            for(int x = 0;x < displayWidth; ++x){
+                QRgb pixel = outImage.pixel(x,y);
+                outImage.setPixel(x, y, qRgb(qRed(pixel)*r, qGreen(pixel)*g, qBlue(pixel)*b));
+            }
+        }
+    }
+    return outImage;
 }
 
 void ImageHolder::Otsu()
@@ -451,39 +483,8 @@ void ImageHolder::cacheImage(QString msg)
 
 void ImageHolder::draw()
 {
-    outImage = displayImage;
-    if(channal == RGB_R){
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qRed(pixel), qRed(pixel), qRed(pixel)));
-            }
-        }
-    } else if(channal == RGB_G) {
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qGreen(pixel), qGreen(pixel), qGreen(pixel)));
-            }
-        }
-    } else if(channal == RGB_B) {
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qBlue(pixel), qBlue(pixel), qBlue(pixel)));
-            }
-        }
-    } else if(channal != GRAY) {
-        bool r = channal & 1;
-        bool g = (channal >> 1) & 1;
-        bool b = (channal >> 2) & 1;
-        for(int y = 0;y < displayHeight; ++y){
-            for(int x = 0;x < displayWidth; ++x){
-                QRgb pixel = outImage.pixel(x,y);
-                outImage.setPixel(x, y, qRgb(qRed(pixel)*r, qGreen(pixel)*g, qBlue(pixel)*b));
-            }
-        }
-    }
+    outImage = getFilteredImage();
+    //gray or full color
     QPixmap pix = QPixmap::fromImage(outImage);
     Ui::MainWindow *ui = m->getUi();
     ui->image->setPixmap(pix);
@@ -584,6 +585,303 @@ void ImageHolder::contrastLiner(QVector<QPoint> points, int chanl)
         }
     }
     draw();
+}
+
+void ImageHolder::contrastCurve(int type, float a, float b, float c)
+{
+    displayImage = images[imgPtr];
+    int out;
+    for(int y = 0;y < displayHeight; ++y){
+        for(int x = 0;x < displayWidth; ++x){
+            QRgb pixel = displayImage.pixel(x,y);
+            if(type == 0){
+                out = round(pow(b, c*(qRed(pixel) - a))) - 1;
+                if(out > 255) out = 255;
+                if(out < 0) out = 0;
+            } else {
+                out = round(a + (std::log(qRed(pixel) + 1)/(b*std::log(c))));
+                if(out > 255) out = 255;
+                if(out < 0) out = 0;
+            }
+            displayImage.setPixel(x,y,qRgb(out, out, out));
+        }
+    }
+    draw();
+}
+
+QVector<int> ImageHolder::getHistogram()
+{
+    QVector<int> outHistogram(256, 0);
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            outHistogram[qRed(displayImage.pixel(x, y))]++;
+        }
+    }
+    return outHistogram;
+}
+
+QImage ImageHolder::extendImage(int extLen)
+{
+    QImage out(displayWidth + 2*extLen, displayHeight + 2*extLen, QImage::Format_RGB32);
+    //top
+    for(int i = 0;i < extLen;i++){
+        for(int j = extLen;j < out.width() - extLen;j++){
+            out.setPixel(j,i,displayImage.pixel( j - extLen, extLen - i - 1));
+        }
+    }
+    //bottom
+    for(int i = 0;i < extLen;i++){
+        for(int j = extLen;j < out.width() - extLen;j++){
+            out.setPixel(j,displayHeight + i,displayImage.pixel( j - extLen,displayHeight - 1 - i));
+        }
+    }
+    //left
+    for(int j = 0;j < extLen;j++){
+        for(int i = extLen;i < out.height() - extLen;i++){
+            out.setPixel(j,i,displayImage.pixel(extLen - j - 1,i - extLen));
+        }
+    }
+    //right
+    for(int j = 0;j < extLen;j++){
+        for(int i = extLen;i < out.height() - extLen;i++){
+            out.setPixel(j,i,displayImage.pixel(displayWidth - j - 1,i - extLen));
+        }
+    }
+    //conor
+    for(int i = 0;i <extLen; i++){
+        for(int j = 0;j < extLen;j++){
+            out.setPixel(j,i,displayImage.pixel(0,0));
+        }
+    }
+    for(int i = 0;i < extLen; i++){
+        for(int j = 0;j < extLen;j++){
+            out.setPixel(j,i + displayHeight + extLen,displayImage.pixel(0,displayHeight - 1));
+        }
+    }
+    for(int i = 0;i < extLen; i++){
+        for(int j = 0;j < extLen;j++){
+            out.setPixel(j + displayWidth + extLen,i + displayHeight + extLen,displayImage.pixel(displayWidth - 1,displayHeight - 1));
+        }
+    }
+    for(int i = 0;i < extLen; i++){
+        for(int j = 0;j < extLen;j++){
+            out.setPixel(j + displayWidth + extLen,i,displayImage.pixel(displayWidth - 1,0));
+        }
+    }
+    //other
+    for(int i = 0;i < displayHeight;i++){
+        for(int j = 0;j <displayWidth;j++){
+            out.setPixel(j + extLen,i + extLen,displayImage.pixel(j,i));
+        }
+    }
+    return out;
+}
+
+void ImageHolder::getGaussianKernal(int size, float sigma, float **gaus)
+{
+    int center=size/2;
+    float sum = 0;
+    for(int i=0;i<size;i++){
+        for(int j=0;j<size;j++){
+            gaus[i][j]=(1/(2*M_PI*sigma*sigma))*exp(-((i-center)*(i-center)+(j-center)*(j-center))/(2*sigma*sigma));
+            sum += gaus[i][j];
+        }
+    }
+    for(int i=0;i<size;i++){
+        for(int j=0;j<size;j++){
+            gaus[i][j]/=sum;
+        }
+    }
+}
+
+void ImageHolder::filter(int size, float **kernal)
+{
+    int pad = (size-1)/2;
+    QImage tmp = extendImage(pad);
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            float out = 0;
+            for(int i = 0;i < size;i++){
+                for(int j = 0;j < size;j++){
+                    out += qRed(tmp.pixel(x + j,y + i)) * kernal[size - j - 1][size - i - 1];
+                }
+            }
+            displayImage.setPixel(x, y, qRgb(round(out), round(out), round(out)));
+        }
+    }
+}
+
+void ImageHolder::midFilter(int size)
+{
+    int pad = (size-1)/2;
+    QImage tmp = extendImage(pad);
+    int len = size*size;
+    int *value = new int [len];
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            for(int i = 0;i < size;i++){
+                for(int j = 0;j < size;j++){
+                    value[i * size + j] = tmp.pixel(x + j,y + i);
+                }
+            }
+            int temp;
+            for (int i = 0; i < len - 1; i++){
+                for (int j = 0; j < len - 1 - i; j++){
+                    if (value[j] > value[j + 1]) {
+                        temp = value[j];
+                        value[j] = value[j + 1];
+                        value[j + 1] = temp;
+                    }
+                }
+            }
+            int out = value[len/2 + 1];
+            displayImage.setPixel(x, y, qRgb(out, out, out));
+        }
+    }
+    delete value;
+    value = NULL;
+}
+
+void ImageHolder::sobel()
+{
+    float **gaus = new float *[5];
+    for(int i = 0;i < 5;++i){
+        gaus[i]=new float[5];
+    }
+
+    getGaussianKernal(5, 1.0, gaus);
+    filter(5, gaus);
+
+    for(int i = 0;i < 5;++i){
+        delete gaus[i];
+        gaus[i] = NULL;
+    }
+    delete gaus;
+    gaus = NULL;
+
+    int sx[3][3] = {{-1, 0, 1},
+                    {-2, 0, 2},
+                    {-1, 0, 1}};
+    int sy[3][3] = {{1, 2, 1},
+                    {0, 0, 0},
+                    {-1, -2, -1}};
+    QImage tmp = extendImage(1);
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            int gx = 0;
+            int gy = 0;
+            int g = 0;
+            for(int i = 0;i < 3;i++){
+                for(int j = 0;j < 3;j++){
+                    gx += qRed(tmp.pixel(x + j,y + i)) * sx[3 - j - 1][3 - i - 1];
+                    gy += qRed(tmp.pixel(x + j,y + i)) * sy[3 - j - 1][3 - i - 1];
+                }
+            }
+            g = round(sqrt(gx*gx + gy*gy));
+            displayImage.setPixel(x, y, qRgb(round(g), round(g), round(g)));
+        }
+    }
+    cacheImage("Sobel");
+    draw();
+}
+
+void ImageHolder::laplace()
+{
+    float **gaus = new float *[5];
+    for(int i = 0;i < 5;++i){
+        gaus[i]=new float[5];
+    }
+
+    getGaussianKernal(5, 1.0, gaus);
+    filter(5, gaus);
+
+    for(int i = 0;i < 5;++i){
+        delete gaus[i];
+        gaus[i] = NULL;
+    }
+    delete gaus;
+    gaus = NULL;
+
+    int t[3][3] = {{0, -1, 0},
+                   {-1, 4, -1},
+                   {0, -1, 0}};
+    QImage tmp = extendImage(1);
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            int out = 0;
+            for(int i = 0;i < 3;i++){
+                for(int j = 0;j < 3;j++){
+                    out += qRed(tmp.pixel(x + j,y + i)) * t[3 - j - 1][3 - i - 1];
+                }
+            }
+            out = qAbs(out);
+            displayImage.setPixel(x, y, qRgb(out, out, out));
+        }
+    }
+    cacheImage("Laplacian");
+    draw();
+}
+
+void ImageHolder::canny()
+{
+    float **gaus = new float *[5];
+    for(int i = 0;i < 5;++i){
+        gaus[i]=new float[5];
+    }
+
+    getGaussianKernal(5, 1.0, gaus);
+    filter(5, gaus);
+
+    for(int i = 0;i < 5;++i){
+        delete gaus[i];
+        gaus[i] = NULL;
+    }
+    delete gaus;
+    gaus = NULL;
+
+
+
+    cacheImage("Canny");
+    draw();
+}
+
+QVector<int> ImageHolder::equalization(QVector<int> histogram)
+{
+    QVector<float> p;      //r[i]'s p
+    QVector<float> s;       //unrounded new gray level
+    QVector<int> out(256,0);
+    QMap<int, int> kmap;      //map[old level] = new level
+    int total = displayHeight*displayWidth;
+    //p
+    p.resize(histogram.size());
+    for(int i = 0;i < histogram.size();++i){
+        p[i] = histogram[i]*1.0f/total;
+    }
+    //s
+    s.resize(histogram.size());
+    for(int i = 0;i < p.size();++i){
+        if(i == 0){
+            s[i] = p[i];
+        } else {
+            s[i] = p[i] + s[i - 1];
+        }
+    }
+    //equalization
+    for(int i = 0;i < s.size();++i){
+        int sk = round(s[i] * 255);
+        out[sk] += histogram[i];
+        kmap[i] = sk;
+    }
+    //update image
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            QRgb pixel = displayImage.pixel(x,y);
+            int out = kmap[qRed(pixel)];
+            displayImage.setPixel(x,y,qRgb(out, out, out));
+        }
+    }
+    draw();
+    return out;
 }
 
 QRgb ImageHolder::getRgb(qint32 x, qint32 y)

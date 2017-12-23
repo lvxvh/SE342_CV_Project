@@ -31,9 +31,9 @@ public:
     void fitScreen();
     void actualPix();
     // color
-    void rgbChannel( qint32 color);
     void toGray();
     void changeHsl(int hOffset, int sOffset, int lOffset);
+    QImage getFilteredImage();
     //binary
     void Otsu();
     int getOtsuThreshold();
@@ -50,7 +50,18 @@ public:
     void crop(QRect rect);
     //contrast
     void contrastLiner(QVector<QPoint> points, int chanl);
-
+    void contrastCurve(int type, float a, float b, float c);
+    QVector<int> equalization(QVector<int> histogram);
+    QVector<int> getHistogram();
+    //smooth filter
+    QImage extendImage(int extLen);
+    void getGaussianKernal(int size, float sigma, float **gaus);
+    void filter(int size, float **kernal);
+    void midFilter(int size);
+    //edge dectect
+    void sobel();
+    void laplace();
+    void canny();
     //helper
     void cacheImage(QString msg);
     void draw();

@@ -38,7 +38,9 @@ SOURCES += main.cpp\
     mylabel.cpp \
     cropdialog.cpp \
     contrastlinerdialog.cpp \
-    contrastcruvedialog.cpp
+    contrastcruvedialog.cpp \
+    histogramdialog.cpp \
+    filterdialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -55,7 +57,9 @@ HEADERS  += mainwindow.h \
     mylabel.h \
     cropdialog.h \
     contrastlinerdialog.h \
-    contrastcruvedialog.h
+    contrastcruvedialog.h \
+    histogramdialog.h \
+    filterdialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
@@ -67,7 +71,9 @@ FORMS    += mainwindow.ui \
     cropdialog.ui \
     photoshotdialog.ui \
     contrastlinerdialog.ui \
-    contrastcruvedialog.ui
+    contrastcruvedialog.ui \
+    histogramdialog.ui \
+    filterdialog.ui
 
 RESOURCES += \
     style.qrc \

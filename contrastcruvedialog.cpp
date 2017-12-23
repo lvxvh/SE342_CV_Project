@@ -44,6 +44,8 @@ void ContrastCruveDialog::trans()
         }
     }
     update();
+    MainWindow *m = (MainWindow *)parentWidget();
+    m->getIh()->contrastCurve(type,a,b,c);
 }
 
 void ContrastCruveDialog::paintEvent(QPaintEvent *)
@@ -78,6 +80,12 @@ void ContrastCruveDialog::paintEvent(QPaintEvent *)
 
 }
 
+void ContrastCruveDialog::closeEvent(QCloseEvent *)
+{
+    MainWindow *ptr = (MainWindow*)parentWidget();
+    ptr->getIh()->resetImage();
+}
+
 void ContrastCruveDialog::on_aEdit_editingFinished()
 {
     if(ui->aEdit->hasFocus()){
@@ -90,25 +98,14 @@ void ContrastCruveDialog::on_aEdit_editingFinished()
 void ContrastCruveDialog::on_bEdit_editingFinished()
 {
     if(ui->bEdit->hasFocus()){
-        float value = ui->bEdit->text().toFloat();
-        if(value < 1){
-            ui->bSlider->setValue(round(value * 100));
-        } else {
-            ui->bSlider->setValue(value + 100);
-        }
-
+        trans();
     }
 }
 
 void ContrastCruveDialog::on_cEdit_editingFinished()
 {
     if(ui->cEdit->hasFocus()){
-        float value = ui->cEdit->text().toFloat();
-        if(value < 1){
-            ui->cSlider->setValue(round(value * 100));
-        } else {
-            ui->cSlider->setValue(value + 100);
-        }
+        trans();
     }
 }
 
@@ -143,13 +140,14 @@ void ContrastCruveDialog::on_aSlider_valueChanged(int value)
 void ContrastCruveDialog::on_bSlider_valueChanged(int value)
 {
     if(ui->bSlider->hasFocus()){
+        float b;
         if(type == EXP){
-            float b;
             b = 1 + value * 0.02f;
-            ui->bEdit->setText(QString("%1").arg(b));
         } else {
-
+            if(value < 100) b = 0.5 + 0.005*value;
+            else b = 1 + 0.05*(value - 100);
         }
+        ui->bEdit->setText(QString("%1").arg(b));
     }
 
     trans();
@@ -158,14 +156,28 @@ void ContrastCruveDialog::on_bSlider_valueChanged(int value)
 void ContrastCruveDialog::on_cSlider_valueChanged(int value)
 {
     if(ui->cSlider->hasFocus()){
+        float c;
         if(type == EXP){
-            float c;
             c = value * 0.005;
-            ui->cEdit->setText(QString("%1").arg(c));
         } else {
-
+            c = value * 0.0025 + 1;
         }
+         ui->cEdit->setText(QString("%1").arg(c));
     }
 
     trans();
+}
+
+void ContrastCruveDialog::on_confirmButton_clicked()
+{
+    MainWindow *ptr = (MainWindow*)parentWidget();
+    ptr->getIh()->cacheImage(QObject::tr("对比度非线性调节"));
+    this->close();
+}
+
+void ContrastCruveDialog::on_cancelButton_clicked()
+{
+    MainWindow *ptr = (MainWindow*)parentWidget();
+    ptr->getIh()->resetImage();
+    this->close();
 }

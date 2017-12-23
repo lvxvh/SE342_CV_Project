@@ -256,7 +256,7 @@ void ContrastLinerDialog::mousePressEvent(QMouseEvent *e)
     }
 }
 
-void ContrastLinerDialog::mouseReleaseEvent(QMouseEvent *e)
+void ContrastLinerDialog::mouseReleaseEvent(QMouseEvent *)
 {
     int channal = ui->channalBox->currentIndex();
     if (channal == 3) channal = 4;
