@@ -58,14 +58,18 @@ public:
     void getGaussianKernal(int size, float sigma, float **gaus);
     void filter(int size, float **kernal);
     void midFilter(int size);
+    void gaussianSmooth(int size, float sigma);
     //edge dectect
     void sobel();
+    void getSobelMagnitude(QVector<QVector<int>> &magnitude, QVector<QVector<int>> &direction);
     void laplace();
     void canny();
+    //hough
+    void houghLine();
     //helper
     void cacheImage(QString msg);
     void draw();
-    void originImage();
+    void undo();
     void resetImage();
     void changeVersion(int ptr);
     bool isGray();

@@ -196,7 +196,7 @@ void ScaleDialog::on_zoomInButton_clicked()
 void ScaleDialog::on_zoomOutButton_clicked()
 {
     float curScale = ui->factorEdit->text().toFloat();
-    float factor;
+    float factor = 1.0f;
 
     if(curScale > 1200) {
         factor = 1200;

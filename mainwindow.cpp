@@ -132,7 +132,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *)
 
 void MainWindow::on_detailButton_clicked()
 {
-    ih->originImage();
+    ih->undo();
 }
 
 void MainWindow::on_rButton_clicked()
@@ -563,4 +563,11 @@ void MainWindow::on_laplacianButton_clicked()
 void MainWindow::on_cannyButton_clicked()
 {
     ih->canny();
+    ih->cacheImage("Canny");
+    ih->draw();
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    ih->houghLine();
 }

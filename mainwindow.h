@@ -86,6 +86,8 @@ private slots:
 
     void on_cannyButton_clicked();
 
+    void on_pushButton_2_clicked();
+
 private:
     //cutting
     bool isInImg(QPoint pos);

@@ -62,11 +62,9 @@ void FilterDialog::on_confirmButton_clicked()
         }
         ptr->getIh()->filter(size, out);
         for(int i = 0;i < size;++i){
-            delete out[i];
-            out[i] = NULL;
+            delete [] out[i];
         }
-        delete out;
-        out = NULL;
+        delete [] out;
     }
     ptr->getIh()->draw();
     ptr->getIh()->cacheImage(QObject::tr("滤波器"));
@@ -173,10 +171,8 @@ void FilterDialog::genMatrix()
             }
         }
         for(int i = 0;i < size;++i){
-            delete(gaus[i]);
-            gaus[i] = NULL;
+            delete [] gaus[i];
         }
-        delete gaus;
-        gaus = NULL;
+        delete [] gaus;
     }
 }
