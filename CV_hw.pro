@@ -40,7 +40,8 @@ SOURCES += main.cpp\
     contrastlinerdialog.cpp \
     contrastcruvedialog.cpp \
     histogramdialog.cpp \
-    filterdialog.cpp
+    filterdialog.cpp \
+    parameterdialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -59,7 +60,8 @@ HEADERS  += mainwindow.h \
     contrastlinerdialog.h \
     contrastcruvedialog.h \
     histogramdialog.h \
-    filterdialog.h
+    filterdialog.h \
+    parameterdialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
@@ -73,7 +75,8 @@ FORMS    += mainwindow.ui \
     contrastlinerdialog.ui \
     contrastcruvedialog.ui \
     histogramdialog.ui \
-    filterdialog.ui
+    filterdialog.ui \
+    parameterdialog.ui
 
 RESOURCES += \
     style.qrc \

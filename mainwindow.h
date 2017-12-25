@@ -86,7 +86,9 @@ private slots:
 
     void on_cannyButton_clicked();
 
-    void on_pushButton_2_clicked();
+    void on_houghLineButton_clicked();
+
+    void on_houghCircleButton_clicked();
 
 private:
     //cutting

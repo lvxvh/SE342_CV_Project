@@ -13,6 +13,7 @@
 #include "histogramdialog.h"
 #include "filterdialog.h"
 #include "croprect.h"
+#include "parameterdialog.h"
 
 #include <QImage>
 #include <QFileDialog>
@@ -51,10 +52,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_action_Open_triggered()
 {
-    ih = new ImageHolder(this);
-    ihs.push_back(ih);
-    curImg = ihs.size() - 1;
-    ih->loadImage();
+    ImageHolder *newIh = new ImageHolder(this);
+    if(newIh->loadImage()){
+        ih = newIh;
+        ihs.push_back(ih);
+        curImg = ihs.size() - 1;
+    } else {
+       delete newIh;
+    }
     freshSide();
 }
 
@@ -552,22 +557,36 @@ void MainWindow::on_filterButton_clicked()
 
 void MainWindow::on_sobelButton_clicked()
 {
-    ih->sobel();
+    ParameterDialog *dlg = new ParameterDialog(SOBEL, this);
+    dlg->setWindowTitle(tr("Sobel参数调整"));
+    dlg->exec();
 }
 
 void MainWindow::on_laplacianButton_clicked()
 {
-    ih->laplace();
+    ParameterDialog *dlg = new ParameterDialog(LAPLAS, this);
+    dlg->setWindowTitle(tr("Laplacian参数调整"));
+    dlg->exec();
 }
 
 void MainWindow::on_cannyButton_clicked()
 {
-    ih->canny();
-    ih->cacheImage("Canny");
-    ih->draw();
+    ParameterDialog *dlg = new ParameterDialog(CANNY, this);
+    dlg->setWindowTitle(tr("Canny参数调整"));
+    dlg->exec();
 }
 
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_houghLineButton_clicked()
 {
-    ih->houghLine();
+    ParameterDialog *dlg = new ParameterDialog(HOUGHLINE, this);
+    dlg->setWindowTitle(tr("霍夫直线检测参数调整"));
+    dlg->exec();
+}
+
+
+void MainWindow::on_houghCircleButton_clicked()
+{
+    ParameterDialog *dlg = new ParameterDialog(HOUGHCIRCLE, this);
+    dlg->setWindowTitle(tr("霍夫圆检测参数调整"));
+    dlg->exec();
 }

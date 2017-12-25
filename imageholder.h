@@ -60,12 +60,13 @@ public:
     void midFilter(int size);
     void gaussianSmooth(int size, float sigma);
     //edge dectect
-    void sobel();
+    void sobel(int gaussianSize, float sigma);
     void getSobelMagnitude(QVector<QVector<int>> &magnitude, QVector<QVector<int>> &direction);
-    void laplace();
-    void canny();
+    void laplace(int gaussianSize, float sigma, int threshold);
+    void canny(int gaussianSize, float sigma, int ht, int lt);
     //hough
-    void houghLine();
+    void houghLine(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int hough_space);
+    void houghCircle(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int sitaSize, int rSize, int rMax, int rMin);
     //helper
     void cacheImage(QString msg);
     void draw();

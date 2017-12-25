@@ -42,7 +42,6 @@ bool ImageHolder::loadImage()
             return true;
         } else {
             QMessageBox::information(m, QObject::tr("打开图像失败"), QObject::tr("打开图像失败!"));
-            //delete image;
             return false;
         }
     } else {
@@ -641,7 +640,7 @@ QImage ImageHolder::extendImage(int extLen)
     //bottom
     for(int i = 0;i < extLen;i++){
         for(int j = extLen;j < out.width() - extLen;j++){
-            out.setPixel(j,displayHeight + i,displayImage.pixel( j - extLen,displayHeight - 1 - i));
+            out.setPixel(j,displayHeight + extLen + i,displayImage.pixel(j - extLen, displayHeight - 1 - i));
         }
     }
     //left
@@ -653,10 +652,10 @@ QImage ImageHolder::extendImage(int extLen)
     //right
     for(int j = 0;j < extLen;j++){
         for(int i = extLen;i < out.height() - extLen;i++){
-            out.setPixel(j,i,displayImage.pixel(displayWidth - j - 1,i - extLen));
+            out.setPixel(displayWidth + extLen + j,i,displayImage.pixel(displayWidth - j - 1,i - extLen));
         }
     }
-    //conor
+    //coner
     for(int i = 0;i <extLen; i++){
         for(int j = 0;j < extLen;j++){
             out.setPixel(j,i,displayImage.pixel(0,0));
@@ -766,9 +765,9 @@ void ImageHolder::gaussianSmooth(int size, float sigma)
     delete [] gaus;
 }
 
-void ImageHolder::sobel()
+void ImageHolder::sobel(int gaussianSize, float sigma)
 {
-    gaussianSmooth(5, 1.0);
+    gaussianSmooth(gaussianSize, sigma);
 
     int sx[3][3] = {{-1, 0, 1},
                     {-2, 0, 2},
@@ -805,8 +804,8 @@ void ImageHolder::getSobelMagnitude(QVector<QVector<int>> &magnitude, QVector<QV
                     {0, 0, 0},
                     {-1, -2, -1}};
     QImage tmp = extendImage(1);
-    /*for(int y = 87;y < 90;y++){
-        qDebug() << y << ":"<< qRed(displayImage.pixel(156, y))<<qRed(displayImage.pixel(157, y))<< qRed(displayImage.pixel(158, y));
+    /*for(int y = 42;y < 45;y++){
+        qDebug() << y << ":"<< qRed(displayImage.pixel(230, y))<<qRed(displayImage.pixel(231, y))<< qRed(displayImage.pixel(232, y));
     }*/
     for(int y = 0;y < displayHeight;++y){
         for(int x = 0;x < displayWidth;++x){
@@ -818,10 +817,17 @@ void ImageHolder::getSobelMagnitude(QVector<QVector<int>> &magnitude, QVector<QV
                     gy += qRed(tmp.pixel(x + j,y + i)) * sy[3 - i - 1][3 - j - 1];
                 }
             }
-
+           /* if(x == 231 && y == 43){
+                qDebug()<<"gx:"<<gx<<"gy:"<<gy;
+            }*/
+            /*if( y >= 42 && y <= 44 && x >= 230 && x<= 232){
+                qDebug()<<"x:"<<x<<"y:"<<y<<"gx"
+            }*/
             magnitude[y][x] = (round(sqrt(gx*gx + gy*gy)) > 255) ? 255 : round(sqrt(gx*gx + gy*gy));
+            displayImage.setPixel(x, y, qRgb(round(magnitude[y][x]), round(magnitude[y][x]), round(magnitude[y][x])));
             if(magnitude[y][x] != 0){
-                float sita = atan2(gy, gx);
+                //gy's positive direction is up computed by sobel  but in qimage y's direction is down
+                float sita = atan2(-gy, gx);
                 float start = -M_PI;
                 for(int i = 0; i < 16;i++){
                     if(sita <= start + M_PI*(i + 1)/8){
@@ -837,17 +843,14 @@ void ImageHolder::getSobelMagnitude(QVector<QVector<int>> &magnitude, QVector<QV
                         break;
                     }
                 }
-            } else {
-                direction[y][x] = -1;
             }
         }
     }
 }
 
-void ImageHolder::laplace()
+void ImageHolder::laplace(int gaussianSize, float sigma, int threshold)
 {
-    int threshold = 10;
-    gaussianSmooth(5, 1.0);
+    gaussianSmooth(gaussianSize, sigma);
 
     int t[3][3] = {{0, -1, 0},
                    {-1, 4, -1},
@@ -869,11 +872,9 @@ void ImageHolder::laplace()
     draw();
 }
 
-void ImageHolder::canny()
+void ImageHolder::canny(int gaussianSize, float sigma, int ht, int lt)
 {
-    int ht = 100;
-    int lt = 30;
-    gaussianSmooth(5, 1.0);
+    gaussianSmooth(gaussianSize, sigma);
 
     QVector<QVector<int>> magnitude;
     magnitude.resize(displayHeight);
@@ -887,96 +888,66 @@ void ImageHolder::canny()
     }
 
     getSobelMagnitude(magnitude, direction);
-
     //non-maxima suppression
     for(int y = 0;y < displayHeight;++y){
         for(int x = 0;x < displayWidth;++x){
             if(direction[y][x] == 0){
-                if(x == 0){
-                    if(magnitude[y][x] <= magnitude[y][x + 1]) {
+                for(int col = -1;col < 2;col++){
+                    if(col != 0){
+                        int yf = y;
+                        int xf = x + col;
+                        if(xf < 0 || xf > displayWidth - 1) continue;
+                        if((col == -1 && magnitude[yf][xf] < magnitude[y][x]) ||
+                                (col == 1 && magnitude[yf][xf] <= magnitude[y][x])){
+                            continue;
+                        }
                         displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                } else if(x == displayWidth - 1){
-                    if(magnitude[y][x] < magnitude[y][x - 1]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                }else{
-                    if(magnitude[y][x] <= magnitude[y][x + 1] || magnitude[y][x] < magnitude[y][x - 1]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
+                        break;
                     }
                 }
             } else if(direction[y][x] == 1){
-                if((x == 0 && y == displayHeight - 1) || (x == displayWidth - 1 && y == 0)){
-                    displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                } else if(x == 0 || y == 0){
-                    if(magnitude[y][x] <= magnitude[y + 1][x + 1]) {
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
+                    for(int offset = -1;offset < 2;offset++){
+                        if(offset != 0){
+                            int yf = y + offset;
+                            int xf = x + offset;
+                            if(xf < 0 || xf > displayWidth - 1 || yf < 0 || yf > displayHeight - 1) continue;
+                            if((offset == -1 && magnitude[yf][xf] < magnitude[y][x]) ||
+                                    (offset == 1 && magnitude[yf][xf] <= magnitude[y][x])){
+                                continue;
+                            }
+                            displayImage.setPixel(x, y, qRgb(0, 0, 0));
+                            break;
+                        }
                     }
-                } else if(x == displayWidth - 1 || y == displayHeight - 1){
-                    if(magnitude[y][x] < magnitude[y - 1][x - 1]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                }else{
-                    if(magnitude[y][x] <= magnitude[y + 1][x + 1] || magnitude[y][x] < magnitude[y - 1][x - 1]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                }
+
             } else if(direction[y][x] == 2){
-                if(y == 0){
-                    if(magnitude[y][x] <= magnitude[y + 1][x]) {
+                for(int row = -1;row < 2;row++){
+                    if(row != 0){
+                        int yf = y + row;
+                        int xf = x;
+                        if(yf < 0 || yf > displayHeight - 1) continue;
+                        if((row == -1 && magnitude[yf][xf] < magnitude[y][x]) ||
+                                (row == 1 && magnitude[yf][xf] <= magnitude[y][x])){
+                            continue;
+                        }
                         displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                } else if(y == displayHeight - 1){
-                    if(magnitude[y][x] < magnitude[y - 1][x]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                }else{
-                    if(magnitude[y][x] <= magnitude[y + 1][x] || magnitude[y][x] < magnitude[y - 1][x]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
+                        break;
                     }
                 }
             } else if(direction[y][x] == 3){
-                if((x == 0 && y == 0) || (x == displayWidth - 1 && y == displayHeight - 1)){
-                    displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                } else if(x == 0 || y ==  displayHeight - 1){
-                    if(magnitude[y][x] < magnitude[y - 1][x + 1]) {
+                for(int offset = -1;offset < 2;offset++){
+                    if(offset != 0){
+                        int yf = y + offset;
+                        int xf = x - offset;
+                        if(xf < 0 || xf > displayWidth - 1 || yf < 0 || yf > displayHeight - 1) continue;
+                        if((offset == -1 && magnitude[yf][xf] < magnitude[y][x]) ||
+                                (offset == 1 && magnitude[yf][xf] <= magnitude[y][x])){
+                            continue;
+                        }
                         displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                } else if(x == displayWidth - 1 || y == 0){
-                    if(magnitude[y][x] <= magnitude[y + 1][x - 1]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
-                    }
-                }else{
-                    if(magnitude[y][x] < magnitude[y - 1][x + 1] || magnitude[y][x] <= magnitude[y + 1][x - 1]){
-                        displayImage.setPixel(x, y, qRgb(0, 0, 0));
-                    } else {
-                        displayImage.setPixel(x, y, qRgb(magnitude[y][x], magnitude[y][x], magnitude[y][x]));
+                        break;
                     }
                 }
-            } else {
-                displayImage.setPixel(x, y, qRgb(0, 0, 0));
             }
         }
     }
@@ -1005,76 +976,20 @@ void ImageHolder::canny()
                     QPoint cur = stack.pop();
                     int x = cur.x();
                     int y = cur.y();
-                    if(x - 1 >= 0 && y - 1 >= 0){
-                        if(qRed(displayImage.pixel(x - 1, y - 1)) == 255){
-                            strong = true;
-                        } else if (qRed(displayImage.pixel(x - 1, y - 1)) != 0 && !marked.contains(QPoint(x - 1, y - 1))){
-                            marked.push_back(QPoint(x - 1, y - 1));
-                            stack.push(QPoint(x - 1, y - 1));
-                            connect.enqueue(QPoint(x - 1, y - 1));
-                        }
-                    }
-                    if(x - 1 >= 0){
-                        if(qRed(displayImage.pixel(x - 1, y)) == 255){
-                            strong = true;
-                        }else if(qRed(displayImage.pixel(x - 1, y)) != 0 && !marked.contains(QPoint(x - 1, y))){
-                            marked.push_back(QPoint(x - 1, y));
-                            stack.push(QPoint(x - 1, y));
-                            connect.enqueue(QPoint(x - 1, y));
-                        }
-                    }
-                    if(x - 1 >=0 && y + 1 <= displayHeight - 1){
-                        if(qRed(displayImage.pixel(x - 1, y + 1)) == 255){
-                            strong = true;
-                        }else if(qRed(displayImage.pixel(x - 1, y + 1)) != 0 && !marked.contains(QPoint(x - 1, y + 1)) ){
-                            marked.push_back(QPoint(x - 1, y + 1));
-                            stack.push(QPoint(x - 1, y + 1));
-                            connect.enqueue(QPoint(x - 1, y + 1));
-                        }
-                    }
-                    if(y - 1 >= 0){
-                        if(qRed(displayImage.pixel(x, y - 1)) == 255){
-                            strong = true;
-                        }else if(qRed(displayImage.pixel(x, y - 1)) != 0 && !marked.contains(QPoint(x, y - 1))){
-                            marked.push_back(QPoint(x, y - 1));
-                            stack.push(QPoint(x, y - 1));
-                            connect.enqueue(QPoint(x, y - 1));
-                        }
-                    }
-                    if(y + 1 <= displayHeight - 1){
-                        if(qRed(displayImage.pixel(x, y + 1)) == 255){
-                            strong = true;
-                        }else if( qRed(displayImage.pixel(x, y + 1)) != 0 && !marked.contains(QPoint(x, y + 1))){
-                            marked.push_back(QPoint(x, y + 1));
-                            stack.push(QPoint(x, y + 1));
-                            connect.enqueue(QPoint(x, y + 1));
-                        }
-                    }
-                    if(x + 1 <= displayWidth - 1 && y - 1 >= 0){
-                        if(qRed(displayImage.pixel(x + 1, y - 1)) == 255){
-                            strong = true;
-                        }else if( qRed(displayImage.pixel(x + 1, y - 1)) != 0 && !marked.contains(QPoint(x + 1, y - 1))){
-                            marked.push_back(QPoint(x + 1, y - 1));
-                            stack.push(QPoint(x + 1, y - 1));
-                            connect.enqueue(QPoint(x + 1, y - 1));
-                        }
-                    }
-                    if(x + 1 <= displayWidth - 1){
-                        if(qRed(displayImage.pixel(x + 1, y)) == 255){
-                            strong = true;
-                        }else if( qRed(displayImage.pixel(x + 1, y)) != 0 && !marked.contains(QPoint(x + 1, y))){
-                            marked.push_back(QPoint(x + 1, y));
-                            stack.push(QPoint(x + 1, y));
-                            connect.enqueue(QPoint(x + 1, y));
-                        }
-                    }
-                    if(x + 1 <= displayWidth - 1 && y + 1 <= displayHeight - 1){
-                        if(qRed(displayImage.pixel(x + 1, y + 1)) == 255){
-                            strong = true;
-                        }else if( qRed(displayImage.pixel(x + 1, y + 1)) != 0 && !marked.contains(QPoint(x + 1, y + 1))){
-                            marked.push_back(QPoint(x + 1, y + 1));
-                            stack.push(QPoint(x + 1, y + 1));
-                            connect.enqueue(QPoint(x + 1, y + 1));
+                    for(int row = -1;row < 2;row++){
+                        for(int col = -1;col < 2;col++){
+                            if(col != 0 || row != 0){
+                                int yf = y + row;
+                                int xf = x + col;
+                                if(xf < 0 || xf > displayWidth - 1 || yf < 0 || yf > displayHeight - 1) continue;
+                                if(qRed(displayImage.pixel(xf, yf)) == 255){
+                                    strong = true;
+                                } else if(qRed(displayImage.pixel(xf, yf)) != 0 && !marked.contains(QPoint(xf, yf))){
+                                    marked.push_back(QPoint(xf, yf));
+                                    stack.push(QPoint(xf, yf));
+                                    connect.enqueue(QPoint(xf, yf));
+                                }
+                            }
                         }
                     }
                 }
@@ -1094,30 +1009,35 @@ void ImageHolder::canny()
     }
 }
 
-void ImageHolder::houghLine()
+void ImageHolder::houghLine(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int hough_space)
 {
-    int hough_space = 500;
     int maxlen = floor(sqrt(displayWidth*displayWidth + displayHeight*displayHeight));
+    int r = 2*maxlen;
     float step = M_PI/hough_space;
-    int hough[maxlen][hough_space] = {0};
-    float t_ratio = 0.5f;
-    canny();
+    //  -r<len<r
+    QVector<QVector<int>> hough;
+    hough.resize(r);
+    for(int i = 0; i < r;i++){
+        hough[i].resize(hough_space);
+    }
+
+    canny(gaussianSize, sigma, ht, lt);
     //to hough space
     for(int y = 0;y < displayHeight;++y){
         for(int x = 0;x < displayWidth;++x){
             int p = qRed(displayImage.pixel(x, y));
             if(p == 0) continue;
             else {
-                for(int i = 0;i < hough_space;i++){
-                    int r = x*cos(i*step) + y*sin(i*step);
-                    hough[r][i]++;
+                for(int j = 0;j < hough_space;j++){
+                    int r = round(x*cos(j*step) + y*sin(j*step));
+                    hough[r + maxlen][j]++;
                 }
             }
         }
     }
     //threshold
     int max = 0;
-    for(int i = 0;i < maxlen;i++){
+    for(int i = 0;i < maxlen * 2;i++){
         for(int j = 0;j < hough_space;j++){
             if(hough[i][j] > max){
                 max = hough[i][j];
@@ -1125,10 +1045,9 @@ void ImageHolder::houghLine()
         }
     }
     int threshold = floor(max*t_ratio);
-
     //to image space
-
-    for(int i = 0;i < maxlen;i++){
+    displayImage = images[imgPtr];
+    for(int i = 0;i < maxlen * 2;i++){
         for(int j = 0;j < hough_space;j++){
 
             if(hough[i][j] < threshold){
@@ -1143,7 +1062,7 @@ void ImageHolder::houghLine()
                         int yf = i + row;
                         int xf = j + col;
                         if(yf < 0) continue;
-                        if(yf < maxlen){
+                        if(yf < maxlen * 2){
                             if(xf < 0){
                                 xf += hough_space;
                             }else if(xf >= hough_space){
@@ -1164,14 +1083,14 @@ void ImageHolder::houghLine()
             float dx = cos(j * step);
             if(j <= hough_space / 4 || (j >= 3 * hough_space / 4)){
                 for (int subrow = 0; subrow < displayHeight; ++subrow) {
-                    int subcol = (int)((i - (subrow * dy)) / dx);
+                    int subcol = (int)((i - maxlen - (subrow * dy)) / dx);
                     if ((subcol < displayWidth) && (subcol >= 0)) {
                         displayImage.setPixel(subcol, subrow, qRgb(255,255,0));
                     }
                 }
             } else {
                 for (int subcol = 0; subcol < displayWidth; ++subcol) {
-                    int subrow = (int)((i - (subcol * dx)) / dy);
+                    int subrow = (int)((i - maxlen - (subcol * dx)) / dy);
                     if ((subrow < displayHeight) && (subrow >= 0)) {
                         displayImage.setPixel(subcol, subrow, qRgb(255,255,0));
                     }
@@ -1182,6 +1101,103 @@ void ImageHolder::houghLine()
     }
     draw();
     cacheImage("霍夫变换直线检测");
+}
+
+void ImageHolder::houghCircle(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int sitaSize, int rSize, int rMax, int rMin)
+{
+    int rStep = ceil((rMax - rMin)/rSize);
+    float sitaStep = 2*M_PI/sitaSize;
+    // hough[a][b][r]
+    QVector<QVector<QVector<int>>> hough;
+    hough.resize(displayWidth);
+    for(int i = 0; i < displayWidth;i++){
+        hough[i].resize(displayHeight);
+        for(int j = 0;j < displayHeight;j++){
+            hough[i][j].resize(rSize);
+        }
+    }
+    canny(gaussianSize, sigma, ht, lt);
+    //to hough space
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            int p = qRed(displayImage.pixel(x, y));
+            if(p == 0) continue;
+            else {
+                for(int r = 0;r < rSize;r++){
+                    for(int s = 0; s < sitaSize;s++){
+                        int a = round(x - (rMin + r*rStep)*cos(s*sitaStep));
+                        int b = round(y - (rMin + r*rStep)*sin(s*sitaStep));
+                        if(a < 0 || a > displayWidth - 1 || b < 0 || b > displayHeight - 1)
+                            continue;
+                        hough[a][b][r]++;
+                    }
+                }
+            }
+        }
+    }
+    //threshold
+    int max = 0;
+    for(int i = 0;i < displayWidth;i++){
+        for(int j = 0;j < displayHeight;j++){
+            for(int k = 0;k < rSize;k++){
+                if(hough[i][j][k] > max){
+                    max = hough[i][j][k];
+                }
+            }
+        }
+    }
+    int threshold = floor(max*t_ratio);
+    //to image space
+    displayImage = images[imgPtr];
+    for(int i = 0;i < displayWidth;i++){
+        for(int j = 0;j < displayHeight;j++){
+            for(int k = 0;k < rSize;k++){
+                if(hough[i][j][k] < threshold){
+                    continue;
+                }
+                //non-maxima supression
+                int hough_value = hough[i][j][k];
+                bool isMax = true;
+                for(int row = -1;row <2;row++){
+                    for(int col = -1;col < 2;col++){
+                        for(int dep = -1;dep < 2;dep++)
+                        if(col != 0 || row != 0 || dep != 0){
+                            int xf = i + col;
+                            int yf = j + row;
+                            int zf = k + dep;
+                            if(yf < 0 || yf > displayHeight - 1 || xf < 0 || xf > displayWidth - 1
+                                    || zf < 0 || zf > rSize - 1) continue;
+                            else{
+                                if(hough[xf][yf][zf] <= hough_value){
+                                    continue;
+                                }
+                                isMax = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(!isMax) continue;
+                //transform
+                for(int s = 0;s < sitaSize;s++){
+                    float rcos = (rMin + k*rStep)*cos(s*sitaStep);
+                    float rsin = (rMin + k*rStep)*sin(s*sitaStep);
+                    int x = round(i + rcos);
+                    int y = round(j + rsin);
+                    if(x >= 0 && x < displayWidth && y >= 0 && y < displayHeight){
+                        displayImage.setPixel(x, y, qRgb(255,255,0));
+                        //qDebug() << x << y;
+                    }
+                }
+
+
+                qDebug()<<"center"<<i<<j<<"radius"<<rMin + k*rStep;
+
+            }
+        }
+    }
+    draw();
+    cacheImage("霍夫变换圆检测");
 }
 
 QVector<int> ImageHolder::equalization(QVector<int> histogram)
