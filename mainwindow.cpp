@@ -14,6 +14,9 @@
 #include "filterdialog.h"
 #include "croprect.h"
 #include "parameterdialog.h"
+#include "bmbasicdialog.h"
+#include "dtdialog.h"
+#include "skeletondialog.h"
 
 #include <QImage>
 #include <QFileDialog>
@@ -33,7 +36,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ih = NULL;
     curImg = -1;
     IconHelper::Instance()->SetIcon(ui->closeButton, QChar(0xf00d), 20);
-
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
     IconHelper::Instance()->SetIcon(ui->historyButton, QChar(0xf1da), 20);
     IconHelper::Instance()->SetIcon(ui->copyButton, QChar(0xf0c5), 20);
@@ -57,6 +59,7 @@ void MainWindow::on_action_Open_triggered()
         ih = newIh;
         ihs.push_back(ih);
         curImg = ihs.size() - 1;
+        ui->toolBox->setCurrentIndex(0);
     } else {
        delete newIh;
     }
@@ -471,16 +474,23 @@ void MainWindow::setIsCropping(bool value)
 void MainWindow::on_copyButton_clicked()
 {
     QImage cur = ih->getOutImage();
-    ih = new ImageHolder(this);
-    ihs.push_back(ih);
+    ImageHolder *newIh = new ImageHolder(this);
+    newIh->setChannal(ih->getChannal());
+    if(newIh->getChannal() == GRAY){
+        newIh->setGrayCheckPoint(0);
+    }
+    ihs.push_back(newIh);
     curImg = ihs.size() - 1;
+    ih = newIh;
     ih->setDisplayImage(cur);
     ih->cacheImage("打开");
+    ih->draw();
     freshSide();
 }
 
 void MainWindow::on_closeButton_clicked()
 {
+    delete ihs[curImg];
     ihs.erase(ihs.begin() + curImg);
     curImg = ihs.size() - 1;
     if(curImg >= 0){
@@ -496,7 +506,7 @@ void MainWindow::on_closeButton_clicked()
 void MainWindow::on_toolBox_currentChanged(int index)
 {
     if(ih == NULL) {
-        ui->toolBox->setCurrentIndex(4);
+        ui->toolBox->setCurrentIndex(8);
     } else {
         int channal = ih->getChannal();
         if(index == 0){
@@ -520,9 +530,15 @@ void MainWindow::on_toolBox_currentChanged(int index)
                     ui->rgbButton->setCheckState(Qt::Checked);
                 }
             }
-        } else if((index == 1 || index == 3 || index == 4 || index == 5)&& channal != GRAY){
-            ui->toolBox->setCurrentIndex(4);
+        } else if(index == 1 && channal == GRAY && ih->isBinary()) {
+            ui->toolBox->setCurrentIndex(2);
+            QMessageBox::information(this, QObject::tr("提示"), QObject::tr("已是二值图像"));
+        } else if((index != 0 || index != 2)&& channal != GRAY){
+            ui->toolBox->setCurrentIndex(0);
             QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
+        } else if(index == 7 && !ih->isBinary()){
+            ui->toolBox->setCurrentIndex(1);
+            QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理二值图像"));
         }
     }
 }
@@ -588,5 +604,36 @@ void MainWindow::on_houghCircleButton_clicked()
 {
     ParameterDialog *dlg = new ParameterDialog(HOUGHCIRCLE, this);
     dlg->setWindowTitle(tr("霍夫圆检测参数调整"));
+    dlg->exec();
+}
+
+void MainWindow::on_BMBasicButton_clicked()
+{
+    BMBasicDialog *dlg = new BMBasicDialog(this);
+    dlg->setWindowTitle(tr("二值形态学基本操作"));
+    dlg->exec();
+}
+
+void MainWindow::on_thinButton_clicked()
+{
+    ih->thinning();
+}
+
+void MainWindow::on_thickenButton_clicked()
+{
+    ih->thickening();
+}
+
+void MainWindow::on_DTButton_clicked()
+{
+    DTDialog *dlg = new DTDialog(this);
+    dlg->setWindowTitle(tr("距离变换结构元素选择"));
+    dlg->exec();
+}
+
+void MainWindow::on_skeletonButton_clicked()
+{
+    SkeletonDialog *dlg = new SkeletonDialog(this);
+    dlg->setWindowTitle(tr("骨架"));
     dlg->exec();
 }

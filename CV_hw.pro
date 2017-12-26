@@ -41,7 +41,10 @@ SOURCES += main.cpp\
     contrastcruvedialog.cpp \
     histogramdialog.cpp \
     filterdialog.cpp \
-    parameterdialog.cpp
+    parameterdialog.cpp \
+    bmbasicdialog.cpp \
+    dtdialog.cpp \
+    skeletondialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -61,7 +64,10 @@ HEADERS  += mainwindow.h \
     contrastcruvedialog.h \
     histogramdialog.h \
     filterdialog.h \
-    parameterdialog.h
+    parameterdialog.h \
+    bmbasicdialog.h \
+    dtdialog.h \
+    skeletondialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
@@ -76,7 +82,10 @@ FORMS    += mainwindow.ui \
     contrastcruvedialog.ui \
     histogramdialog.ui \
     filterdialog.ui \
-    parameterdialog.ui
+    parameterdialog.ui \
+    bmbasicdialog.ui \
+    dtdialog.ui \
+    skeletondialog.ui
 
 RESOURCES += \
     style.qrc \

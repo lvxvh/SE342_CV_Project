@@ -67,6 +67,19 @@ public:
     //hough
     void houghLine(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int hough_space);
     void houghCircle(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int sitaSize, int rSize, int rMax, int rMin);
+    //morphology
+    void morphoBasic(int type, int se[3][3], QPoint origin = QPoint(1, 1));
+    void dilation(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1));
+    void erosion(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1),
+                    bool record = false, QVector<QPoint> *eroded = NULL);
+    void morphoOpen(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1));
+    void morphoClose(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1));
+    void hitOrMiss(QImage &image, int se[3][3]);
+    void thinning();
+    void thickening();
+    void distanceTrans(int seType);
+    void skeleton(QVector<QImage> &sn);
+    void skeletonRebuild(QVector<QImage> &sn);
     //helper
     void cacheImage(QString msg);
     void draw();
@@ -74,6 +87,7 @@ public:
     void resetImage();
     void changeVersion(int ptr);
     bool isGray();
+    bool isBinary();
 
     QRgb getRgb(qint32 x, qint32 y);
 
@@ -95,6 +109,9 @@ public:
 
     QImage getOutImage() const;
 
+
+    void setGrayCheckPoint(int value);
+
 private:
     MainWindow *m;
 
@@ -108,7 +125,7 @@ private:
     QImage displayImage;
     QImage outImage;       //copy
     int channal;
-    int channalCheckPoint;  //checkpoint when rgb img -> gray img used in change version
+    int grayCheckPoint;  //checkpoint when rgb img -> gray img used in change version
 
     qint32 displayWidth;
     qint32 displayHeight;

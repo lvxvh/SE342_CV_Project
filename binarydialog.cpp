@@ -2,6 +2,7 @@
 #include "ui_binarydialog.h"
 #include <QMessageBox>
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 
 BinaryDialog::BinaryDialog(QWidget *parent) :
@@ -111,6 +112,7 @@ void BinaryDialog::on_confirmButton_clicked()
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->cacheImage(QObject::tr("双阈值二值化"));
+    ptr->getUi()->toolBox->setCurrentIndex(2);
     this->close();
 }
 

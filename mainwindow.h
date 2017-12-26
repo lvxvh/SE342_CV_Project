@@ -90,6 +90,16 @@ private slots:
 
     void on_houghCircleButton_clicked();
 
+    void on_BMBasicButton_clicked();
+
+    void on_thinButton_clicked();
+
+    void on_thickenButton_clicked();
+
+    void on_DTButton_clicked();
+
+    void on_skeletonButton_clicked();
+
 private:
     //cutting
     bool isInImg(QPoint pos);

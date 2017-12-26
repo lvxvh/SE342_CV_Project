@@ -18,7 +18,7 @@ ImageHolder::ImageHolder(MainWindow *mw)
     displayWidth = 0;
     reseted = 0;
     imgPtr = -1;
-    channalCheckPoint = -1;
+    grayCheckPoint = -1;
 }
 
 ImageHolder::~ImageHolder()
@@ -119,7 +119,7 @@ void ImageHolder::toGray()
     }
     channal = GRAY;
     cacheImage(QObject::tr("转为灰度图像"));
-    channalCheckPoint = imgPtr;             //checkpoint
+    grayCheckPoint = imgPtr;             //checkpoint
 
     Ui::MainWindow *ui = m->getUi();
     ui->toolBox->setCurrentIndex(1);
@@ -197,8 +197,9 @@ void ImageHolder::Otsu()
             }
         }
     }
-
     cacheImage(QObject::tr("Otsu"));
+    Ui::MainWindow *ui = m->getUi();
+    ui->toolBox->setCurrentIndex(2);
     draw();
 }
 
@@ -471,8 +472,8 @@ void ImageHolder::cacheImage(QString msg)
     if(reseted) {
         images.erase(images.begin() + (imgPtr + 1), images.end());
         logs.erase(logs.begin() + (imgPtr + 1), logs.end());
-        if(imgPtr < channalCheckPoint){
-            channalCheckPoint = -1;
+        if(imgPtr < grayCheckPoint){
+            grayCheckPoint = -1;
         }
         reseted = 0;
     }
@@ -500,12 +501,11 @@ void ImageHolder::undo()
         reseted = 1;    //used in truncate
         imgPtr -= 1;
         Ui::MainWindow *ui = m->getUi();
-        if (imgPtr >= channalCheckPoint){
+        ui->toolBox->setCurrentIndex(2);
+        if (imgPtr >= grayCheckPoint){
             setChannal(GRAY);
-            ui->toolBox->setCurrentIndex(1);
         } else{
             setChannal(RGB_ALL);
-            ui->toolBox->setCurrentIndex(0);
         }
         draw();
     }
@@ -528,12 +528,11 @@ void ImageHolder::changeVersion(int ptr)
         reseted = 1;    //used in truncate
         imgPtr = ptr;
         Ui::MainWindow *ui = m->getUi();
-        if (imgPtr >= channalCheckPoint){
+        ui->toolBox->setCurrentIndex(2);
+        if (imgPtr >= grayCheckPoint){
             setChannal(GRAY);
-            ui->toolBox->setCurrentIndex(1);
         } else{
             setChannal(RGB_ALL);
-            ui->toolBox->setCurrentIndex(0);
         }
         draw();
     }
@@ -543,6 +542,20 @@ bool ImageHolder::isGray()
 {
     return channal == GRAY;
 }
+
+bool ImageHolder::isBinary()
+{
+    if(!isGray()) return false;
+    for(int y = 0;y < displayHeight; ++y){
+        for(int x = 0;x < displayWidth; ++x){
+            if(qRed(displayImage.pixel(x,y)) != 255 && qRed(displayImage.pixel(x,y)) != 0)
+                return false;
+        }
+    }
+    return true;
+}
+
+
 
 void ImageHolder::drawCropRect(QRect rect)
 {
@@ -1186,12 +1199,11 @@ void ImageHolder::houghCircle(int gaussianSize, float sigma, int ht, int lt, flo
                     int y = round(j + rsin);
                     if(x >= 0 && x < displayWidth && y >= 0 && y < displayHeight){
                         displayImage.setPixel(x, y, qRgb(255,255,0));
-                        //qDebug() << x << y;
                     }
                 }
 
 
-                qDebug()<<"center"<<i<<j<<"radius"<<rMin + k*rStep;
+                //qDebug()<<"center"<<i<<j<<"radius"<<rMin + k*rStep;
 
             }
         }
@@ -1199,6 +1211,462 @@ void ImageHolder::houghCircle(int gaussianSize, float sigma, int ht, int lt, flo
     draw();
     cacheImage("霍夫变换圆检测");
 }
+
+void ImageHolder::morphoBasic(int type, int se[3][3], QPoint origin)
+{
+    switch (type) {
+    case 0:
+        dilation(displayImage, se, origin);
+        draw();
+        cacheImage("形态学膨胀");
+        break;
+    case 1:
+        erosion(displayImage, se, origin);
+        draw();
+        cacheImage("形态学腐蚀");
+        break;
+    case 2:
+        morphoOpen(displayImage, se, origin);
+        draw();
+        cacheImage("形态学开操作");
+        break;
+    default:
+        morphoClose(displayImage, se, origin);
+        draw();
+        cacheImage("形态学闭操作");
+        break;
+    }
+}
+
+void ImageHolder::dilation(QImage &image, int se[3][3], QPoint origin)
+{
+    //reverse
+    int tmp = origin.x();
+    origin.setX(origin.y());
+    origin.setY(tmp);
+    bool newSe[3][3];
+    for (int i = 0;i < 3;i++){
+        for(int j = 0;j <3;j++){
+            newSe[i][j] = se[2 - i][2 - j];
+        }
+    }
+    int oi = origin.x();
+    int oj = origin.y();
+    QImage resImg = image;
+    int wid = image.width();
+    int heit = image.height();
+    for(int y = 0;y < heit;++y){
+        for(int x = 0;x < wid;++x){
+            bool dia = false;
+            for(int i = 0;i < 3;i++){
+                if(dia) break;
+                for(int j = 0;j < 3;j++){
+                    if(dia) break;
+                    int yf = y + (i - oi);
+                    int xf = x + (j - oj);
+                    if(yf < 0 || yf >= heit || xf < 0 || xf >= wid) continue;
+                    if(newSe[i][j] == 1 && qRed(image.pixel(xf, yf)) != 0){
+                        resImg.setPixel(x, y, qRgb(255, 255, 255));
+                        dia = true;
+                    }
+                }
+            }
+            if(!dia) resImg.setPixel(x, y, qRgb(0, 0, 0));
+        }
+    }
+    image = resImg;
+}
+
+void ImageHolder::erosion(QImage &image, int se[3][3], QPoint origin,
+                            bool record, QVector<QPoint> *eroded)
+{
+    int wid = image.width();
+    int heit = image.height();
+    int oi = origin.x();
+    int oj = origin.y();
+    QImage resImg = image;
+    for(int y = 0;y < heit;++y){
+        for(int x = 0;x < wid;++x){
+            bool ero = false;
+            for(int i = 0;i < 3;i++){
+                if(ero) break;
+                for(int j = 0;j < 3;j++){
+                    if(ero) break;
+                    int yf = y + (i - oi);
+                    int xf = x + (j - oj);
+                    if(yf < 0 || yf >= heit || xf < 0 || xf >= wid) continue;
+                    if(se[i][j] == 1 && qRed(image.pixel(xf, yf)) == 0){
+                        if(record && qRed(resImg.pixel(x, y)) != 0){
+                            eroded->push_back(QPoint(x, y));
+                        }
+                        resImg.setPixel(x, y, qRgb(0, 0, 0));
+                        ero = true;
+                    }
+                }
+            }
+            if(!ero) resImg.setPixel(x, y, qRgb(255, 255, 255));
+        }
+    }
+    image = resImg;
+}
+
+void ImageHolder::morphoOpen(QImage &image, int se[3][3], QPoint origin)
+{
+    erosion(image, se, origin);
+    dilation(image, se, origin);
+}
+
+void ImageHolder::morphoClose(QImage &image, int se[3][3], QPoint origin)
+{
+    dilation(image, se, origin);
+    erosion(image, se, origin);
+}
+
+void ImageHolder::hitOrMiss(QImage &image, int se[3][3])
+{
+    int wid = image.width();
+    int heit = image.height();
+    QImage compleImg(wid, heit, QImage::Format_RGB32);
+    int oi = 1;
+    int oj = 1;
+    QImage erodedOriginImage = image;
+    erosion(erodedOriginImage, se, QPoint(oi, oj));
+
+    for(int y = 0;y < heit;++y){
+        for(int x = 0;x < wid;++x){
+            if(qRed(image.pixel(x, y)) == 0) compleImg.setPixel(x, y, qRgb(255,255,255));
+            else compleImg.setPixel(x, y, qRgb(0,0,0));
+        }
+    }
+
+    int newSe[3][3];
+    for(int i = 0;i < 3;i++){
+        for(int j = 0;j < 3;j++){
+            if(se[i][j] == 0) newSe[i][j] = 1;
+            else if(se[i][j] == 1) newSe[i][j] = 0;
+            else newSe[i][j] = -1;
+        }
+    }
+    QImage erodedCmplImage = compleImg;
+    erosion(erodedCmplImage, newSe, QPoint(oi, oj));
+
+    QImage resImg(wid, heit, QImage::Format_RGB32);
+    for(int y = 0;y < heit;++y){
+        for(int x = 0;x < wid;++x){
+            if(qRed(erodedOriginImage.pixel(x, y)) != 0 && qRed(erodedCmplImage.pixel(x, y)) != 0){
+                resImg.setPixel(x, y, qRgb(255,255,255));
+            } else {
+                resImg.setPixel(x, y, qRgb(0,0,0));
+            }
+        }
+    }
+    image = resImg;
+}
+
+void ImageHolder::thinning()
+{
+    int thinSe[8][3][3] = {{
+                               { 0, 0,  0},
+                               {-1, 1, -1},
+                               { 1, 1,  1}
+                           },
+                           {
+                               {-1, 0,  0},
+                               { 1, 1,  0},
+                               { 1, 1, -1}
+                           },
+                           {
+                               {1, -1, 0},
+                               {1,  1, 0},
+                               {1, -1, 0}
+                           },
+                           {
+                               { 1, 1, -1},
+                               { 1, 1,  0},
+                               {-1, 0,  0}
+                           },
+                           {
+                               { 1, 1,  1},
+                               {-1, 1, -1},
+                               { 0, 0,  0}
+                           },
+                           {
+                               {-1, 1,  1},
+                               { 0, 1,  1},
+                               { 0, 0, -1}
+                           },
+                           {
+                               {0, -1, 1},
+                               {0,  1, 1},
+                               {0, -1, 1}
+                           },
+                           {
+                               { 0, 0, -1},
+                               { 0, 1,  1},
+                               {-1, 1,  1}
+                           }
+                          };
+    QImage resImg = displayImage;
+    QImage originImg(displayWidth, displayHeight, QImage::Format_RGB32);
+    int curSe = 0;
+    while(resImg != originImg){
+        originImg = resImg;
+        QImage tmpImg = originImg;
+        hitOrMiss(tmpImg, thinSe[curSe]);
+        curSe++;
+        if(curSe == 8) curSe = 0;
+        for(int y = 0;y < displayHeight;++y){
+            for(int x = 0;x < displayWidth;++x){
+                if(qRed(originImg.pixel(x, y)) != 0 && qRed(tmpImg.pixel(x, y)) != 0){
+                    resImg.setPixel(x, y, qRgb(0,0,0));
+                } else if(qRed(originImg.pixel(x, y)) != 0){
+                    resImg.setPixel(x, y, qRgb(255,255,255));
+                } else {
+                    resImg.setPixel(x, y, qRgb(0,0,0));
+                }
+            }
+        }
+    }
+    displayImage = resImg;
+    draw();
+    cacheImage("细化");
+}
+
+void ImageHolder::thickening()
+{
+    int thickSe[8][3][3] = {{
+                               { 1, 1,  1},
+                               {-1, 0, -1},
+                               { 0, 0,  0}
+                           },
+                           {
+                               {-1, 1,  1},
+                               { 0, 0,  1},
+                               { 0, 0, -1}
+                           },
+                           {
+                               {0, -1, 1},
+                               {0,  0, 1},
+                               {0, -1, 1}
+                           },
+                           {
+                               { 0, 0, -1},
+                               { 0, 0,  1},
+                               {-1, 1,  1}
+                           },
+                           {
+                               { 0, 0,  0},
+                               {-1, 0, -1},
+                               { 1, 1,  1}
+                           },
+                           {
+                               {-1, 0,  0},
+                               { 1, 0,  0},
+                               { 1, 1, -1}
+                           },
+                           {
+                               {1, -1, 0},
+                               {1,  0, 0},
+                               {1, -1, 0}
+                           },
+                           {
+                               { 1, 1, -1},
+                               { 1, 0,  0},
+                               {-1, 0,  0}
+                           }
+                          };
+    QImage resImage = displayImage;
+    QImage originImg(displayWidth, displayHeight, QImage::Format_RGB32);
+    int curSe = 0;
+    while(resImage != originImg){
+        originImg = resImage;
+        QImage tmpImg = originImg;
+        hitOrMiss(tmpImg, thickSe[curSe]);
+        curSe++;
+        if(curSe == 8) curSe = 0;
+        for(int y = 0;y < displayHeight;++y){
+            for(int x = 0;x < displayWidth;++x){
+                if(qRed(originImg.pixel(x, y)) != 0 || qRed(tmpImg.pixel(x, y)) != 0){
+                    resImage.setPixel(x, y, qRgb(255,255,255));
+                } else {
+                    resImage.setPixel(x, y, qRgb(0,0,0));
+                }
+            }
+        }
+    }
+    displayImage = resImage;
+    draw();
+    cacheImage("粗化");
+}
+
+void ImageHolder::distanceTrans(int seType)
+{
+    int squareSe[3][3] = {{1, 1, 1},
+                          {1, 1, 1},
+                          {1, 1, 1}};
+
+    int crossSe[3][3] = {{0, 1, 0},
+                         {1, 1, 1},
+                         {0, 1, 0}};
+
+    int verSe[3][3] = {{0, 1, 0},
+                       {0, 1, 0},
+                       {0, 1, 0}};
+
+    int horSe[3][3] = {{0, 0, 0},
+                       {1, 1, 1},
+                       {0, 0, 0}};
+    QImage resImage(displayWidth, displayHeight, QImage::Format_RGB32);
+    QVector<QPoint> *eroded = new QVector<QPoint>;
+    QImage inImage(displayWidth, displayHeight, QImage::Format_RGB32);
+    int level = 1;
+    while(inImage != displayImage){
+        inImage = displayImage;
+        if(seType == 0){
+            erosion(displayImage, squareSe, QPoint(1, 1), true, eroded);
+        } else if(seType == 1){
+            erosion(displayImage, crossSe, QPoint(1, 1), true, eroded);
+        }else {
+            erosion(displayImage, verSe, QPoint(1, 1), true, eroded);
+            erosion(displayImage, horSe, QPoint(1, 1), true, eroded);
+            erosion(displayImage, crossSe, QPoint(1, 1), true, eroded);
+        }
+        for (QVector<QPoint>::iterator it = eroded->begin(); it != eroded->end(); it++) {
+            resImage.setPixel(*it, qRgb(level, level, level));
+        }
+        eroded->clear();
+        level++;
+    }
+    displayImage = resImage;
+    draw();
+    cacheImage("距离变换");
+}
+
+void ImageHolder::skeleton(QVector<QImage> &sn)
+{
+    int crossSe[3][3] = {{0, 1, 0},
+                         {1, 1, 1},
+                         {0, 1, 0}};
+
+    int verSe[3][3] = {{0, 1, 0},
+                       {0, 1, 0},
+                       {0, 1, 0}};
+
+    int horSe[3][3] = {{0, 0, 0},
+                       {1, 1, 1},
+                       {0, 0, 0}};
+
+    QImage resImage(displayWidth, displayHeight, QImage::Format_RGB32);
+    resImage.fill(Qt::black);
+    /*for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            resImage.setPixel(x, y, qRgb(0,0,0));
+        }
+    }*/
+    QImage inImage(displayWidth, displayHeight, QImage::Format_RGB32);
+    // Sn(A) = (A ero B)*n - (A ero B)*n open B
+    // S(A) = sum(Sn(A))
+    //first time n == 0
+
+    QImage tmpLeftImg = displayImage;
+    QImage tmpRightImg = tmpLeftImg;
+    erosion(tmpRightImg, verSe);
+    erosion(tmpRightImg, horSe);
+    erosion(tmpRightImg, crossSe);
+    dilation(tmpRightImg, verSe);
+    dilation(tmpRightImg, horSe);
+    dilation(tmpRightImg, crossSe);
+    for(int y = 0;y < displayHeight;++y){
+        for(int x = 0;x < displayWidth;++x){
+            if(qRed(resImage.pixel(x,y)) != 0 || (qRed(tmpLeftImg.pixel(x,y)) != 0 && qRed(tmpRightImg.pixel(x,y)) == 0)){
+                resImage.setPixel(x, y, qRgb(255,255,255));
+            }
+        }
+    }
+    sn.push_back(resImage);
+
+    //continue
+    while(inImage != displayImage){
+        inImage = displayImage;
+        QImage tmpLeftImg = displayImage;  //left part of the formula
+        erosion(tmpLeftImg, verSe);
+        erosion(tmpLeftImg, horSe);
+        erosion(tmpLeftImg, crossSe);
+        QImage tmpRightImg = tmpLeftImg;
+        //manual open
+        erosion(tmpRightImg, verSe);
+        erosion(tmpRightImg, horSe);
+        erosion(tmpRightImg, crossSe);
+        dilation(tmpRightImg, verSe);
+        dilation(tmpRightImg, horSe);
+        dilation(tmpRightImg, crossSe);
+        for(int y = 0;y < displayHeight;++y){
+            for(int x = 0;x < displayWidth;++x){
+                if(qRed(resImage.pixel(x,y)) != 0 || (qRed(tmpLeftImg.pixel(x,y)) != 0 && qRed(tmpRightImg.pixel(x,y)) == 0)){
+                    resImage.setPixel(x, y, qRgb(255,255,255));
+                }
+            }
+        }
+        QImage sk(displayWidth, displayHeight, QImage::Format_RGB32);
+        sk.fill(Qt::black);
+        for(int y = 0;y < displayHeight;++y){
+            for(int x = 0;x < displayWidth;++x){
+                if(qRed(tmpLeftImg.pixel(x,y)) != 0 && qRed(tmpRightImg.pixel(x,y)) == 0){
+                    sk.setPixel(x, y, qRgb(255,255,255));
+                }
+            }
+        }
+        sn.push_back(sk);
+        displayImage = tmpLeftImg;
+    }
+    displayImage = resImage;
+    draw();
+    cacheImage("骨架提取");
+}
+
+void ImageHolder::skeletonRebuild(QVector<QImage> &sn)
+{
+    int crossSe[3][3] = {{0, 1, 0},
+                         {1, 1, 1},
+                         {0, 1, 0}};
+
+    int verSe[3][3] = {{0, 1, 0},
+                       {0, 1, 0},
+                       {0, 1, 0}};
+
+    int horSe[3][3] = {{0, 0, 0},
+                       {1, 1, 1},
+                       {0, 0, 0}};
+
+    QImage resImage(displayWidth, displayHeight, QImage::Format_RGB32);
+    resImage.fill(Qt::black);
+    // A = sum (Sn(A) di B *n)
+    //first time n == 0
+    for(int i = 0;i < sn.size() - 1;i++){
+        QImage cur = sn[i];
+        for(int j = 0;j < i;j++){
+            dilation(cur, crossSe);
+            dilation(cur, verSe);
+            dilation(cur, horSe);
+        }
+        /*if(i == 10) {
+            displayImage = cur;
+            draw();
+        }*/
+        for(int y = 0;y < displayHeight;++y){
+            for(int x = 0;x < displayWidth;++x){
+                if(qRed(resImage.pixel(x,y)) != 0 || qRed(cur.pixel(x,y)) != 0 ){
+                    resImage.setPixel(x, y, qRgb(255,255,255));
+                }
+            }
+        }
+    }
+    displayImage = resImage;
+    draw();
+    cacheImage("骨架重建");
+}
+
+
 
 QVector<int> ImageHolder::equalization(QVector<int> histogram)
 {
@@ -1291,6 +1759,12 @@ QImage ImageHolder::getOutImage() const
 {
     return outImage;
 }
+
+void ImageHolder::setGrayCheckPoint(int value)
+{
+    grayCheckPoint = value;
+}
+
 
 
 QVector<QString> ImageHolder::getLogs() const

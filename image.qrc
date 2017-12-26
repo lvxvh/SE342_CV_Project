@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>images/exp.png</file>
         <file>images/log.png</file>
+        <file>images/cross.png</file>
+        <file>images/disk.png</file>
+        <file>images/square.png</file>
     </qresource>
 </RCC>
