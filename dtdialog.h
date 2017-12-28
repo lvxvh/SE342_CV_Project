@@ -20,8 +20,11 @@ private slots:
 
     void on_cancelButton_clicked();
 
+    void on_comboBox_currentIndexChanged(int index);
+
 private:
     Ui::DTDialog *ui;
+    int size;
 };
 
 #endif // DTDIALOG_H

@@ -68,18 +68,38 @@ public:
     void houghLine(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int hough_space);
     void houghCircle(int gaussianSize, float sigma, int ht, int lt, float t_ratio, int sitaSize, int rSize, int rMax, int rMin);
     //morphology
-    void morphoBasic(int type, int se[3][3], QPoint origin = QPoint(1, 1));
-    void dilation(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1));
-    void erosion(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1),
+    void genSe(int type, QSize size, QVector<QVector<int>> &se);
+    void morphoBasic(int type, QVector<QVector<int>> &se, QPoint origin);
+    void dilation(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1),
+                    bool record = false, QVector<QPoint> *diladed = NULL);
+    void erosion(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1),
                     bool record = false, QVector<QPoint> *eroded = NULL);
-    void morphoOpen(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1));
-    void morphoClose(QImage &image, int se[3][3], QPoint origin= QPoint(1, 1));
-    void hitOrMiss(QImage &image, int se[3][3]);
+    void morphoOpen(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void morphoClose(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void hitOrMiss(QImage &image, QVector<QVector<int>> &se);
     void thinning();
     void thickening();
-    void distanceTrans(int seType);
+    void distanceTrans(int seType, int size);
     void skeleton(QVector<QImage> &sn);
     void skeletonRebuild(QVector<QImage> &sn);
+    void morphoRebuild(int type, QVector<QVector<int>> &se, QPoint origin);
+    void geoDilation(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void geoErosion(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void rebuildOpen(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void rebuildClose(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    //gray morphology
+    void grayMorphBasic(int type, QVector<QVector<int>> &se, QPoint origin);
+    void grayDilation(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayErosion(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayOpen(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayClose(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayRebuild(int type, QVector<QVector<int>> &se, QPoint origin);
+    void grayGeoDilation(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayGeoErosion(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayRebuildOpen(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayRebuildClose(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void watershed();
+    void drawMark(QPoint p);
     //helper
     void cacheImage(QString msg);
     void draw();

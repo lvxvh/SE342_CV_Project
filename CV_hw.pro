@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     parameterdialog.cpp \
     bmbasicdialog.cpp \
     dtdialog.cpp \
-    skeletondialog.cpp
+    skeletondialog.cpp \
+    watersheddialog.cpp
 
 HEADERS  += mainwindow.h \
     imageholder.h \
@@ -67,7 +68,8 @@ HEADERS  += mainwindow.h \
     parameterdialog.h \
     bmbasicdialog.h \
     dtdialog.h \
-    skeletondialog.h
+    skeletondialog.h \
+    watersheddialog.h
 
 FORMS    += mainwindow.ui \
     hsldialog.ui \
@@ -85,7 +87,8 @@ FORMS    += mainwindow.ui \
     parameterdialog.ui \
     bmbasicdialog.ui \
     dtdialog.ui \
-    skeletondialog.ui
+    skeletondialog.ui \
+    watersheddialog.ui
 
 RESOURCES += \
     style.qrc \

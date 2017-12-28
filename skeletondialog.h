@@ -23,6 +23,7 @@ private slots:
 
 private:
     Ui::SkeletonDialog *ui;
+    bool extracted;
 };
 
 #endif // SKELETONDIALOG_H

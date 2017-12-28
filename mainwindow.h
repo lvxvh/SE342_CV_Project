@@ -31,6 +31,8 @@ public:
 
     void setIsCropping(bool value);
 
+    void setIsMarking(bool value);
+
 signals:
     void refreshLog();
     void sendLists(int count);
@@ -100,11 +102,20 @@ private slots:
 
     void on_skeletonButton_clicked();
 
+    void on_BMRebuildButton_clicked();
+
+    void on_GBMBasicButton_clicked();
+
+    void on_GMRButton_clicked();
+
+    void on_watershedButton_clicked();
+
 private:
     //cutting
     bool isInImg(QPoint pos);
     QPoint mapToImg(QPoint point);
     bool isCropping;
+    bool isMarking;
     bool cropStarted;
     CropRect cropRect;
 

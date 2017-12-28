@@ -3,7 +3,9 @@
 
 #include <QDialog>
 
-enum MophoType {DIL, ERO, OPN, CLS};
+enum MophoType {DIL, ERO, OPN, CLS, OPNR, CLSR};
+enum SEType {SQR, CRS, ELL};
+enum BMType {BASIC, REBUILD, GBM, GREBUILD};
 
 namespace Ui {
 class BMBasicDialog;
@@ -14,43 +16,35 @@ class BMBasicDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit BMBasicDialog(QWidget *parent = 0);
+    explicit BMBasicDialog(BMType Ttype, QWidget *parent = 0);
     ~BMBasicDialog();
 
 private slots:
-    void on_button_00_clicked();
 
-    void on_button_01_clicked();
-
-    void on_button_02_clicked();
-
-    void on_button_10_clicked();
-
-    void on_button_11_clicked();
-
-    void on_button_12_clicked();
-
-    void on_button_20_clicked();
-
-    void on_button_21_clicked();
-
-    void on_button_22_clicked();
-
-    void on_originButton_clicked();
 
     void on_confirmButton_clicked();
 
     void on_cancelButton_clicked();
 
-    void on_comboBox_currentIndexChanged(int index);
+    void on_typeBox_currentIndexChanged(int index);
+
+    void on_seBox_currentIndexChanged(int index);
+
+    void on_xEdit_editingFinished();
+
+    void on_yEdit_editingFinished();
+
+    void on_centerButton_clicked();
+
+    void on_widthEdit_editingFinished();
+
+    void on_heightEdit_editingFinished();
 
 private:
     Ui::BMBasicDialog *ui;
-    QPushButton *button[3][3];
-    int se[3][3] = {{0}};
-    QPoint origin;
     MophoType type;
-    bool isChoosingOrigin = 0;
+    SEType sType;
+    BMType Ttype;
 };
 
 #endif // BMBASICDIALOG_H

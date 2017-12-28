@@ -93,7 +93,7 @@ void CropDialog::on_heightEdit_editingFinished()
 void CropDialog::on_confirmButton_clicked()
 {
     MainWindow *m = (MainWindow *)parentWidget();
-
+    m->setIsCropping(false);
     m->getIh()->crop(QRect(ui->xEdit->text().toInt(), ui->yEdit->text().toInt(),
                            ui->widthEdit->text().toInt(), ui->heightEdit->text().toInt()));
     this->close();

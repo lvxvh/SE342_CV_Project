@@ -17,6 +17,8 @@
 #include "bmbasicdialog.h"
 #include "dtdialog.h"
 #include "skeletondialog.h"
+#include "watersheddialog.h"
+
 
 #include <QImage>
 #include <QFileDialog>
@@ -39,7 +41,17 @@ MainWindow::MainWindow(QWidget *parent) :
     IconHelper::Instance()->SetIcon(ui->detailButton, QChar(0xf0e2), 20);
     IconHelper::Instance()->SetIcon(ui->historyButton, QChar(0xf1da), 20);
     IconHelper::Instance()->SetIcon(ui->copyButton, QChar(0xf0c5), 20);
+    ui->toolBox->setCurrentIndex(9);
+    ui->action_Save->setEnabled(false);
+    ui->action_SaveAs->setEnabled(false);
+    ui->closeButton->setEnabled(false);
+    ui->copyButton->setEnabled(false);
+    ui->historyButton->setEnabled(false);
+    ui->detailButton->setEnabled(false);
+    ui->action_actual_pix->setEnabled(false);
+    ui->action_fit_screen->setEnabled(false);
     isCropping = 0;
+    isMarking = 0;
     cropStarted = 0;
 }
 
@@ -60,6 +72,15 @@ void MainWindow::on_action_Open_triggered()
         ihs.push_back(ih);
         curImg = ihs.size() - 1;
         ui->toolBox->setCurrentIndex(0);
+        ui->action_Save->setEnabled(true);
+        ui->action_SaveAs->setEnabled(true);
+        ui->closeButton->setEnabled(true);
+        ui->closeButton->setEnabled(true);
+        ui->copyButton->setEnabled(true);
+        ui->historyButton->setEnabled(true);
+        ui->detailButton->setEnabled(true);
+        ui->action_actual_pix->setEnabled(true);
+        ui->action_fit_screen->setEnabled(true);
     } else {
        delete newIh;
     }
@@ -115,6 +136,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
                 sendRectGeo(beginX, beginY,
                             cropRect.width(), cropRect.height());
             }
+        } else if ((e->buttons() == Qt::LeftButton) && isMarking){
+               ih->drawMark(mapToImg(e->pos()));
         }
     }
 }
@@ -122,13 +145,18 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 void MainWindow::mousePressEvent(QMouseEvent *e)
 {
     if(ih != NULL) {
-        ih->resetImage();
+        /* i can't remember why i added reset here*/
+        if(!isMarking)
+            ih->resetImage();
+
         if(isCropping && e->buttons() == Qt::LeftButton) {
             if(isInImg(e->pos())){
                 cropRect.setStart(mapToImg(e->pos()));
                 cropRect.setEnd(mapToImg(e->pos()));
                 cropStarted = true;
             }
+        } else if ((e->buttons() == Qt::LeftButton) && isMarking){
+            ih->drawMark(e->pos());
         }
     }
 }
@@ -445,6 +473,7 @@ void MainWindow::on_cutButton_clicked()
     isCropping = 1;
     cropRect.reset();
     CropDialog *dlg = new CropDialog(ih->getDisplayWidth(), ih->getDisplayHeight(), this);
+    dlg->setWindowTitle(tr("裁剪"));
     dlg->show();
 }
 
@@ -463,6 +492,11 @@ QPoint MainWindow::mapToImg(QPoint point)
     qint32 y=point.y() - ui->image->pos().y() - 85 + (ui->scrollArea->verticalScrollBar()->value());
 
     return QPoint(x, y);
+}
+
+void MainWindow::setIsMarking(bool value)
+{
+    isMarking = value;
 }
 
 void MainWindow::setIsCropping(bool value)
@@ -493,12 +527,22 @@ void MainWindow::on_closeButton_clicked()
     delete ihs[curImg];
     ihs.erase(ihs.begin() + curImg);
     curImg = ihs.size() - 1;
+    ui->toolBox->setCurrentIndex(9);
     if(curImg >= 0){
         ih = ihs[curImg];
         ih->draw();
     } else {
         ih = NULL;
         ui->image->clear();
+        ui->action_Save->setEnabled(false);
+        ui->action_SaveAs->setEnabled(false);
+        ui->closeButton->setEnabled(false);
+        ui->closeButton->setEnabled(false);
+        ui->copyButton->setEnabled(false);
+        ui->historyButton->setEnabled(false);
+        ui->detailButton->setEnabled(false);
+        ui->action_actual_pix->setEnabled(false);
+        ui->action_fit_screen->setEnabled(false);
     }
     freshSide();
 }
@@ -506,7 +550,7 @@ void MainWindow::on_closeButton_clicked()
 void MainWindow::on_toolBox_currentChanged(int index)
 {
     if(ih == NULL) {
-        ui->toolBox->setCurrentIndex(8);
+        ui->toolBox->setCurrentIndex(9);
     } else {
         int channal = ih->getChannal();
         if(index == 0){
@@ -533,7 +577,7 @@ void MainWindow::on_toolBox_currentChanged(int index)
         } else if(index == 1 && channal == GRAY && ih->isBinary()) {
             ui->toolBox->setCurrentIndex(2);
             QMessageBox::information(this, QObject::tr("提示"), QObject::tr("已是二值图像"));
-        } else if((index != 0 || index != 2)&& channal != GRAY){
+        } else if(index != 0 && index != 2 && index != 9 && channal != GRAY){
             ui->toolBox->setCurrentIndex(0);
             QMessageBox::information(this, QObject::tr("提示"), QObject::tr("只能处理灰度图像"));
         } else if(index == 7 && !ih->isBinary()){
@@ -609,7 +653,7 @@ void MainWindow::on_houghCircleButton_clicked()
 
 void MainWindow::on_BMBasicButton_clicked()
 {
-    BMBasicDialog *dlg = new BMBasicDialog(this);
+    BMBasicDialog *dlg = new BMBasicDialog(BASIC, this);
     dlg->setWindowTitle(tr("二值形态学基本操作"));
     dlg->exec();
 }
@@ -636,4 +680,34 @@ void MainWindow::on_skeletonButton_clicked()
     SkeletonDialog *dlg = new SkeletonDialog(this);
     dlg->setWindowTitle(tr("骨架"));
     dlg->exec();
+}
+
+void MainWindow::on_BMRebuildButton_clicked()
+{
+    BMBasicDialog *dlg = new BMBasicDialog(REBUILD, this);
+    dlg->setWindowTitle(tr("二值形态学重建"));
+    dlg->exec();
+}
+
+void MainWindow::on_GBMBasicButton_clicked()
+{
+    BMBasicDialog *dlg = new BMBasicDialog(GBM, this);
+    dlg->setWindowTitle(tr("灰度形态学基本操作"));
+    dlg->exec();
+}
+
+
+void MainWindow::on_GMRButton_clicked()
+{
+    BMBasicDialog *dlg = new BMBasicDialog(GREBUILD, this);
+    dlg->setWindowTitle(tr("灰度形态学重建"));
+    dlg->exec();
+}
+
+void MainWindow::on_watershedButton_clicked()
+{
+    isMarking = 1;
+    WatershedDialog *dlg = new WatershedDialog(this);
+    dlg->setWindowTitle(tr("分水岭标记"));
+    dlg->show();
 }
