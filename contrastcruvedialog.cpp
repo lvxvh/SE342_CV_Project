@@ -1,6 +1,7 @@
 #include "contrastcruvedialog.h"
 #include "ui_contrastcruvedialog.h"
 #include "mainwindow.h"
+#include <QMouseEvent>
 
 
 ContrastCruveDialog::ContrastCruveDialog(QWidget *parent) :
@@ -13,12 +14,26 @@ ContrastCruveDialog::ContrastCruveDialog(QWidget *parent) :
     pix = pix.scaled(ui->tipLabel->width(), ui->tipLabel->height(), Qt::KeepAspectRatio);
     ui->tipLabel->setPixmap(pix);
     type = EXP;
+    setMouseTracking(true);
     trans();
 }
 
 ContrastCruveDialog::~ContrastCruveDialog()
 {
     delete ui;
+}
+
+bool ContrastCruveDialog::mouseInPix(QPoint m)
+{
+    return m.x() > 100 && m.y() > 110 && m.x() < 100 + 256 && m.y() < 110 + 256;
+}
+
+QPoint ContrastCruveDialog::mapToPix(QPoint p)
+{
+    QPoint out;
+    out.setX(p.x() - 100);
+    out.setY(p.y() - 110);
+    return out;
 }
 
 void ContrastCruveDialog::trans()
@@ -84,6 +99,18 @@ void ContrastCruveDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();
+}
+
+void ContrastCruveDialog::mouseMoveEvent(QMouseEvent *e)
+{
+    QPoint mouse = e->pos();
+    if(mouseInPix(mouse)){
+        ui->inLabel->setText(QString::number(mapToPix(mouse).x()));
+        ui->outLabel->setText(QString::number(255 - mapToPix(mouse).y()));
+    } else {
+        ui->inLabel->setText("");
+        ui->outLabel->setText("");
+    }
 }
 
 void ContrastCruveDialog::on_aEdit_editingFinished()

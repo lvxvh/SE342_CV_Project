@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-enum MophoType {DIL, ERO, OPN, CLS, OPNR, CLSR};
+enum MophoType {DIL, ERO, OPN, CLS, OPNR, CLSR, DILR, EROR};
 enum SEType {SQR, CRS, ELL};
 enum BMType {BASIC, REBUILD, GBM, GREBUILD};
 
@@ -20,7 +20,7 @@ public:
     ~BMBasicDialog();
 
 private slots:
-
+    void receiveLists(int count);
 
     void on_confirmButton_clicked();
 

@@ -32,6 +32,10 @@ private slots:
 
     void on_sigmaEdit_editingFinished();
 
+    void on_rMaxEdit_editingFinished();
+
+    void on_rMinEdit_editingFinished();
+
 private:
     Ui::ParameterDialog *ui;
     action a;

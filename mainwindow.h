@@ -33,6 +33,8 @@ public:
 
     void setIsMarking(bool value);
 
+    ImageHolder *getIhByIndex(int index) const;
+
 signals:
     void refreshLog();
     void sendLists(int count);

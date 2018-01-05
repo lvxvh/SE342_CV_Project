@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
+    <width>279</width>
     <height>166</height>
    </rect>
   </property>
@@ -44,7 +44,7 @@
     <rect>
      <x>10</x>
      <y>50</y>
-     <width>251</width>
+     <width>261</width>
      <height>41</height>
     </rect>
    </property>
@@ -55,7 +55,7 @@
     </font>
    </property>
    <property name="text">
-    <string>在原图中绘制分水岭算法起始标记点。</string>
+    <string>在原图中绘制分水岭算法起始标记点</string>
    </property>
   </widget>
  </widget>

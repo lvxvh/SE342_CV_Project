@@ -11,21 +11,34 @@ BMBasicDialog::BMBasicDialog(BMType Ttype, QWidget *parent) :
 {
     ui->setupUi(this);
     this->Ttype = Ttype;
+
     if(Ttype == BASIC || Ttype == GBM){
         type = DIL;
     } else {
+        connect(parent, SIGNAL(sendLists(int)), this, SLOT(receiveLists(int)));
         for(int i = 3;i >=0;i--){
             ui->typeBox->removeItem(i);
         }
         ui->typeBox->addItem("重建开");
         ui->typeBox->addItem("重建闭");
+        ui->typeBox->addItem("膨胀重建");
+        ui->typeBox->addItem("腐蚀重建");
     }
     sType = SQR;
+    ui->templateLabel->hide();
+    ui->templateBox->hide();
 }
 
 BMBasicDialog::~BMBasicDialog()
 {
     delete ui;
+}
+
+void BMBasicDialog::receiveLists(int count)
+{
+    for(int i = 0;i < count;++i){
+        ui->templateBox->addItem(tr("图") + QString::number(i + 1, 10));
+    }
 }
 
 void BMBasicDialog::on_confirmButton_clicked()
@@ -39,6 +52,10 @@ void BMBasicDialog::on_confirmButton_clicked()
     origin.setX(ui->yEdit->text().toInt());
     origin.setY(ui->xEdit->text().toInt());
     ptr->getIh()->genSe(sType, size, se);
+    QImage tmp;
+    if(Ttype == REBUILD || Ttype == GREBUILD){
+        tmp = ptr->getIhByIndex(ui->templateBox->currentIndex())->getDisplayImage();
+    }
     switch (type) {
     case DIL:
         if(Ttype == BASIC)
@@ -70,11 +87,47 @@ void BMBasicDialog::on_confirmButton_clicked()
         else
             ptr->getIh()->grayRebuild(4, se, origin);
         break;
-    default:
+    case CLSR:
         if(Ttype == REBUILD)
             ptr->getIh()->morphoRebuild(5, se, origin);
         else
             ptr->getIh()->grayRebuild(5, se, origin);
+        break;
+    case DILR:
+        if(tmp.size() != ptr->getIh()->getDisplayImage().size()){
+            QMessageBox::information(this, QObject::tr("提示"), QObject::tr("图像尺寸不同！"));
+            break;
+        }
+        if(Ttype == REBUILD){
+            if(!ptr->getIhByIndex(ui->templateBox->currentIndex())->isBinary()){
+                QMessageBox::information(this, QObject::tr("提示"), QObject::tr("模板不是二值图像！"));
+                break;
+            }
+            ptr->getIh()->rebuildDilation(tmp);
+        }
+        else{
+            if(!tmp.isGrayscale()){
+                QMessageBox::information(this, QObject::tr("提示"), QObject::tr("模板不是灰度图像！"));
+                break;
+            }
+            ptr->getIh()->grayRebuildDilation(tmp);
+        }
+        break;
+    default:
+        if(Ttype == REBUILD) {
+            if(!ptr->getIhByIndex(ui->templateBox->currentIndex())->isBinary()){
+                QMessageBox::information(this, QObject::tr("提示"), QObject::tr("模板不是二值图像！"));
+                break;
+            }
+            ptr->getIh()->rebuildErosion(tmp);
+        }
+        else {
+            if(!tmp.isGrayscale()){
+                QMessageBox::information(this, QObject::tr("提示"), QObject::tr("模板不是灰度图像！"));
+                break;
+            }
+            ptr->getIh()->grayRebuildErosion(tmp);
+        }
         break;
     }
     this->close();
@@ -105,10 +158,23 @@ void BMBasicDialog::on_typeBox_currentIndexChanged(int index)
             break;
         }
     } else {
-        if(index == 0){
+        switch (index) {
+        case 0:
             type = OPNR;
-        } else {
+            break;
+        case 1:
             type = CLSR;
+            break;
+        case 2:
+            ui->templateBox->show();
+            ui->templateLabel->show();
+            type = DILR;
+            break;
+        default:
+            ui->templateBox->show();
+            ui->templateLabel->show();
+            type = EROR;
+            break;
         }
     }
 }

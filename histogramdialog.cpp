@@ -48,7 +48,7 @@ void HistogramDialog::closeEvent(QCloseEvent *)
 
 void HistogramDialog::paintEvent(QPaintEvent *)
 {
-    QPixmap pix = QPixmap(256, 211);
+    QPixmap pix = QPixmap(261, 211);
     pix.fill(qRgb(58,64,68));
     QPainter pp(&pix);
 
@@ -56,16 +56,18 @@ void HistogramDialog::paintEvent(QPaintEvent *)
     pp.setPen(QColor(178,184,188));
     int yMax = max + 3 - max%3;
     for(int i = 0;i < 256;++i){
-        pp.drawLine(QPoint(i, 255), QPoint(i, 255 - histogram[i]*210/yMax));
+        pp.drawLine(QPoint(i+5, 255), QPoint(i+5, 255 - histogram[i]*210/yMax));
     }
 
     pp.setPen(QColor(0, 160, 230));
+    pp.drawLine(QPoint(5, 0), QPoint(5, 5));
     pp.drawLine(QPoint(50, 0), QPoint(50, 5));
     pp.drawLine(QPoint(100, 0), QPoint(100, 5));
     pp.drawLine(QPoint(150, 0), QPoint(150, 5));
     pp.drawLine(QPoint(200, 0), QPoint(200, 5));
     pp.drawLine(QPoint(250, 0), QPoint(250, 5));
 
+    pp.drawLine(QPoint(5, 0), QPoint(5, 5));
     pp.drawLine(QPoint(50, 210), QPoint(50, 205));
     pp.drawLine(QPoint(100, 210), QPoint(100, 205));
     pp.drawLine(QPoint(150, 210), QPoint(150, 205));
@@ -74,17 +76,17 @@ void HistogramDialog::paintEvent(QPaintEvent *)
 
     pp.drawLine(QPoint(0, 70), QPoint(5, 70));
     pp.drawLine(QPoint(0, 140), QPoint(5, 140));
-    pp.drawLine(QPoint(255, 70), QPoint(250, 70));
-    pp.drawLine(QPoint(255, 140), QPoint(250, 140));
+    pp.drawLine(QPoint(255, 70), QPoint(260, 70));
+    pp.drawLine(QPoint(255, 140), QPoint(260, 140));
 
     QPainter painter(this);
-    painter.drawPixmap(90, 50, pix);
+    painter.drawPixmap(85, 50, pix);
 
     QPen pen;
-    pen.setWidth(2);
+    pen.setWidth(1);
     pen.setColor(QColor(0, 160, 230));
     painter.setPen(pen);
-    painter.drawRect(90, 50, 256, 211);
+    painter.drawRect(85, 50, 261, 211);
 }
 
 void HistogramDialog::on_equalButton_clicked()

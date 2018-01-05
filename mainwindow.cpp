@@ -67,8 +67,9 @@ MainWindow::~MainWindow()
 void MainWindow::on_action_Open_triggered()
 {
     ImageHolder *newIh = new ImageHolder(this);
+    ImageHolder *oldIh = ih;
+    ih = newIh;
     if(newIh->loadImage()){
-        ih = newIh;
         ihs.push_back(ih);
         curImg = ihs.size() - 1;
         ui->toolBox->setCurrentIndex(0);
@@ -83,7 +84,9 @@ void MainWindow::on_action_Open_triggered()
         ui->action_fit_screen->setEnabled(true);
     } else {
        delete newIh;
+       ih = oldIh;
     }
+
     freshSide();
 }
 
@@ -494,9 +497,15 @@ QPoint MainWindow::mapToImg(QPoint point)
     return QPoint(x, y);
 }
 
+
 void MainWindow::setIsMarking(bool value)
 {
     isMarking = value;
+}
+
+ImageHolder *MainWindow::getIhByIndex(int index) const
+{
+    return ihs[index];
 }
 
 void MainWindow::setIsCropping(bool value)
@@ -686,6 +695,8 @@ void MainWindow::on_BMRebuildButton_clicked()
 {
     BMBasicDialog *dlg = new BMBasicDialog(REBUILD, this);
     dlg->setWindowTitle(tr("二值形态学重建"));
+    int count = ihs.size();
+    sendLists(count);
     dlg->exec();
 }
 
@@ -701,6 +712,8 @@ void MainWindow::on_GMRButton_clicked()
 {
     BMBasicDialog *dlg = new BMBasicDialog(GREBUILD, this);
     dlg->setWindowTitle(tr("灰度形态学重建"));
+    int count = ihs.size();
+    sendLists(count);
     dlg->exec();
 }
 

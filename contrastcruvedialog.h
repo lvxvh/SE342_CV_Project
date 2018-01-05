@@ -18,6 +18,8 @@ public:
     ~ContrastCruveDialog();
 
 private:
+    bool mouseInPix(QPoint m);
+    QPoint mapToPix(QPoint p);
     Ui::ContrastCruveDialog *ui;
     transType type;
     void trans();
@@ -25,6 +27,7 @@ private:
 protected:
     void paintEvent(QPaintEvent *);
     void closeEvent(QCloseEvent *);
+    void mouseMoveEvent(QMouseEvent *e);
 private slots:
     void on_aEdit_editingFinished();
     void on_bEdit_editingFinished();

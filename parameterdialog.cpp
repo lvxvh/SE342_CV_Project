@@ -119,8 +119,12 @@ void ParameterDialog::on_confirmButton_clicked()
 
     if(a == SOBEL){
         ptr->getIh()->sobel(gaussianSize, sigma);
+        ptr->getIh()->cacheImage("Sobel");
+        ptr->getIh()->draw();
     } else if(a == LAPLAS){
         ptr->getIh()->laplace(gaussianSize, sigma, t);
+        ptr->getIh()->cacheImage("Laplacian");
+        ptr->getIh()->draw();
     } else if(a == CANNY){
         ptr->getIh()->canny(gaussianSize, sigma, ht, lt);
         //canny is midium
@@ -201,4 +205,28 @@ void ParameterDialog::closeEvent(QCloseEvent *)
 {
     MainWindow *ptr = (MainWindow*)parentWidget();
     ptr->getIh()->resetImage();
+}
+
+void ParameterDialog::on_rMaxEdit_editingFinished()
+{
+    if(ui->rMaxEdit->hasFocus()){
+        int max = ui->rMaxEdit->text().toInt();
+        int min = ui->rMinEdit->text().toInt();
+        if(max < min) {
+            QMessageBox::information(this, tr("错误"), tr("不得小于最小值"));                                                                      QMessageBox::information(this, tr("错误"), tr("要求输入值为-180~180范围内的整数，已插入最近数值"));
+            ui->rMaxEdit->setText(QString::number(min));
+        }
+    }
+}
+
+void ParameterDialog::on_rMinEdit_editingFinished()
+{
+    if(ui->rMinEdit->hasFocus()){
+        int max = ui->rMaxEdit->text().toInt();
+        int min = ui->rMinEdit->text().toInt();
+        if(max < min) {
+            QMessageBox::information(this, tr("错误"), tr("不得大于最大值"));                                                                      QMessageBox::information(this, tr("错误"), tr("要求输入值为-180~180范围内的整数，已插入最近数值"));
+            ui->rMinEdit->setText(QString::number(max));
+        }
+    }
 }

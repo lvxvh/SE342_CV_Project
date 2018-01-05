@@ -85,6 +85,8 @@ public:
     void morphoRebuild(int type, QVector<QVector<int>> &se, QPoint origin);
     void geoDilation(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
     void geoErosion(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void rebuildDilation(QImage &tmplate);
+    void rebuildErosion(QImage &tmplate);
     void rebuildOpen(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
     void rebuildClose(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
     //gray morphology
@@ -96,6 +98,8 @@ public:
     void grayRebuild(int type, QVector<QVector<int>> &se, QPoint origin);
     void grayGeoDilation(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
     void grayGeoErosion(QImage &image, QImage &tmplate,QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
+    void grayRebuildDilation(QImage &tmplate);
+    void grayRebuildErosion(QImage &tmplate);
     void grayRebuildOpen(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
     void grayRebuildClose(QImage &image, QVector<QVector<int>> &se, QPoint origin= QPoint(-1, -1));
     void watershed();
