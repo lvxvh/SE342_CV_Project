@@ -23,72 +23,72 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    imageholder.cpp \
-    iconhelper.cpp \
-    hsldialog.cpp \
-    qhsl.cpp \
-    mslider.cpp \
-    historydialog.cpp \
-    binarydialog.cpp \
-    scaledialog.cpp \
-    rotatedialog.cpp \
-    aopdialog.cpp \
-    mylabel.cpp \
-    cropdialog.cpp \
-    contrastlinerdialog.cpp \
-    contrastcruvedialog.cpp \
-    histogramdialog.cpp \
-    filterdialog.cpp \
-    parameterdialog.cpp \
-    bmbasicdialog.cpp \
-    dtdialog.cpp \
-    skeletondialog.cpp \
-    watersheddialog.cpp
+SOURCES += sources/main.cpp\
+        sources/mainwindow.cpp \
+    sources/imageholder.cpp \
+    sources/utils/iconhelper.cpp \
+    sources/dialogs/hsldialog.cpp \
+    sources/utils/qhsl.cpp \
+    sources/utils/mslider.cpp \
+    sources/dialogs/historydialog.cpp \
+    sources/dialogs/binarydialog.cpp \
+    sources/dialogs/scaledialog.cpp \
+    sources/dialogs/rotatedialog.cpp \
+    sources/dialogs/aopdialog.cpp \
+    sources/utils/mylabel.cpp \
+    sources/dialogs/cropdialog.cpp \
+    sources/dialogs/contrastlinerdialog.cpp \
+    sources/dialogs/contrastcruvedialog.cpp \
+    sources/dialogs/histogramdialog.cpp \
+    sources/dialogs/filterdialog.cpp \
+    sources/dialogs/parameterdialog.cpp \
+    sources/dialogs/bmbasicdialog.cpp \
+    sources/dialogs/dtdialog.cpp \
+    sources/dialogs/skeletondialog.cpp \
+    sources/dialogs/watersheddialog.cpp
 
-HEADERS  += mainwindow.h \
-    imageholder.h \
-    iconhelper.h \
-    hsldialog.h \
-    qhsl.h \
-    mslider.h \
-    historydialog.h \
-    binarydialog.h \
-    scaledialog.h \
-    rotatedialog.h \
-    aopdialog.h \
-    croprect.h \
-    mylabel.h \
-    cropdialog.h \
-    contrastlinerdialog.h \
-    contrastcruvedialog.h \
-    histogramdialog.h \
-    filterdialog.h \
-    parameterdialog.h \
-    bmbasicdialog.h \
-    dtdialog.h \
-    skeletondialog.h \
-    watersheddialog.h
+HEADERS  += headers/mainwindow.h \
+    headers/imageholder.h \
+    headers/iconhelper.h \
+    headers/hsldialog.h \
+    headers/qhsl.h \
+    headers/mslider.h \
+    headers/historydialog.h \
+    headers/binarydialog.h \
+    headers/scaledialog.h \
+    headers/rotatedialog.h \
+    headers/aopdialog.h \
+    headers/croprect.h \
+    headers/mylabel.h \
+    headers/cropdialog.h \
+    headers/contrastlinerdialog.h \
+    headers/contrastcruvedialog.h \
+    headers/histogramdialog.h \
+    headers/filterdialog.h \
+    headers/parameterdialog.h \
+    headers/bmbasicdialog.h \
+    headers/dtdialog.h \
+    headers/skeletondialog.h \
+    headers/watersheddialog.h
 
-FORMS    += mainwindow.ui \
-    hsldialog.ui \
-    historydialog.ui \
-    binarydialog.ui \
-    scaledialog.ui \
-    rotatedialog.ui \
-    aopdialog.ui \
-    cropdialog.ui \
-    photoshotdialog.ui \
-    contrastlinerdialog.ui \
-    contrastcruvedialog.ui \
-    histogramdialog.ui \
-    filterdialog.ui \
-    parameterdialog.ui \
-    bmbasicdialog.ui \
-    dtdialog.ui \
-    skeletondialog.ui \
-    watersheddialog.ui
+FORMS    += forms/mainwindow.ui \
+    forms/hsldialog.ui \
+    forms/historydialog.ui \
+    forms/binarydialog.ui \
+    forms/scaledialog.ui \
+    forms/rotatedialog.ui \
+    forms/aopdialog.ui \
+    forms/cropdialog.ui \
+    forms/photoshotdialog.ui \
+    forms/contrastlinerdialog.ui \
+    forms/contrastcruvedialog.ui \
+    forms/histogramdialog.ui \
+    forms/filterdialog.ui \
+    forms/parameterdialog.ui \
+    forms/bmbasicdialog.ui \
+    forms/dtdialog.ui \
+    forms/skeletondialog.ui \
+    forms/watersheddialog.ui
 
 RESOURCES += \
     style.qrc \
